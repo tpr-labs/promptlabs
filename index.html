@@ -100,6 +100,16 @@
       resize: vertical;
     }
 
+    .btn-copy-template,
+    .btn-copy-template:hover,
+    .btn-copy-template:focus,
+    .btn-copy-template:active {
+      background: transparent !important;
+      color: #e4e4e7 !important;
+      border-color: #52525b !important;
+      box-shadow: none !important;
+    }
+
     @media (max-width: 991.98px) {
       .output-textarea {
         min-height: 240px;
@@ -167,7 +177,7 @@
   <script>
     (() => {
       "use strict";
-      const TEMPLATE_URL = "https://raw.githubusercontent.com/tpr-labs/promptlabs/refs/heads/main/template.json";
+      const TEMPLATE_URL = "./template.json";
 
       const state = { data: null, category: "all", promptName: null, search: "" };
 
@@ -231,7 +241,7 @@
           const byCategory = state.category === "all" || p.category === state.category;
           if (!byCategory) return false;
           if (!state.search) return true;
-          const text = [p.display_name, p.name, p.description, p.category, ...(p.tags || [])].join(" ").toLowerCase();
+          const text = [p.display_name, p.name, p.description, p.steps, p.category, ...(p.tags || [])].join(" ").toLowerCase();
           return text.includes(state.search);
         });
       }
@@ -242,7 +252,7 @@
 
       function ensureSelection() {
         const prompts = filteredPrompts();
-        if (!prompts.some((p) => p.name === state.promptName)) state.promptName = prompts[0]?.name || null;
+        if (!prompts.some((p) => p.name === state.promptName)) state.promptName = null;
       }
 
       function renderAll() {
@@ -260,7 +270,7 @@
             const c = cat === "all" || p.category === cat;
             if (!c) return false;
             if (!state.search) return true;
-            const text = [p.display_name, p.name, p.description, p.category, ...(p.tags || [])].join(" ").toLowerCase();
+            const text = [p.display_name, p.name, p.description, p.steps, p.category, ...(p.tags || [])].join(" ").toLowerCase();
             return text.includes(state.search);
           }).length;
 
@@ -320,25 +330,23 @@
         el.details.classList.remove("d-none");
         el.details.innerHTML = `
           <div class="surface p-3 p-md-4 mb-3">
-            <div class="d-flex flex-wrap justify-content-between gap-2">
+            <div>
               <div>
                 <h1 class="h4 mb-1">${escapeHtml(prompt.display_name || prompt.name)}</h1>
                 <p class="mb-2" style="color:var(--text-soft);">${escapeHtml(prompt.description || "No description")}</p>
+                ${prompt.steps ? `<div class="small mb-2" style="color:var(--text-soft);"><i class="bi bi-list-check me-1"></i>${escapeHtml(prompt.steps)}</div>` : ""}
                 <div class="d-flex flex-wrap gap-1">
                   <span class="badge text-bg-warning text-dark"><i class="bi bi-diagram-3 me-1"></i>${escapeHtml(prompt.category)}</span>
                   <span class="badge text-bg-secondary"><i class="bi bi-cpu me-1"></i>${escapeHtml(prompt.model || "unknown")}</span>
                   ${(prompt.tags || []).map((t) => `<span class="badge tag-badge">${escapeHtml(t)}</span>`).join("")}
                 </div>
               </div>
-              <button id="copyAllBtn" type="button" class="btn btn-outline-warning btn-sm"><i class="bi bi-clipboard-check me-1"></i>Copy All</button>
             </div>
-            <div id="copyAllFeedback" class="small text-success mt-2"></div>
           </div>
           <div id="templatesRoot" class="vstack gap-3"></div>
         `;
 
         const root = document.getElementById("templatesRoot");
-        const controllers = [];
 
         templates.forEach((tpl, i) => {
           const card = document.createElement("section");
@@ -349,15 +357,19 @@
                 <h2 class="h6 mb-1"><i class="bi bi-braces-asterisk me-1" style="color:var(--accent);"></i>#${escapeHtml(String(tpl.sequence ?? i + 1))} ${escapeHtml(tpl.name || "template")}</h2>
                 <p class="small mb-0" style="color:var(--text-soft);">${escapeHtml(tpl.description || "")}</p>
               </div>
-              <button class="btn btn-outline-light btn-sm" data-copy><i class="bi bi-clipboard me-1"></i>Copy</button>
+              <button class="btn btn-sm btn-copy-template" data-copy><i class="bi bi-clipboard me-1"></i>Copy</button>
             </div>
 
             <div class="row g-3">
               <div class="col-12 col-xl-4">
                 <label class="form-label fw-semibold"><i class="bi bi-sliders2 me-1"></i>Variables</label>
                 <div data-vars class="vstack gap-2"></div>
-                <label class="small mt-2 mb-1" style="color:var(--text-soft);">Resolved variable values</label>
-                <pre data-vars-json class="form-control mono" style="min-height: 90px;">{}</pre>
+                <button class="btn btn-link btn-sm px-0 mt-2 text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#vars-${i}" aria-expanded="false" aria-controls="vars-${i}">
+                  <i class="bi bi-chevron-down me-1"></i>Resolved variable values
+                </button>
+                <div class="collapse" id="vars-${i}">
+                  <pre data-vars-json class="form-control mono" style="min-height: 90px;">{}</pre>
+                </div>
               </div>
               <div class="col-12 col-xl-8">
                 <label class="form-label fw-semibold"><i class="bi bi-pencil-square me-1"></i>Editable output prompt</label>
@@ -370,13 +382,7 @@
             </div>
           `;
           root.appendChild(card);
-          controllers.push(buildTemplateController(card, tpl));
-        });
-
-        document.getElementById("copyAllBtn").addEventListener("click", async () => {
-          const text = controllers.map((c, i) => `### Template ${i + 1}: ${c.name()}\n${c.output()}`).join("\n\n");
-          const ok = await copyText(text);
-          document.getElementById("copyAllFeedback").textContent = ok ? "Copied all outputs." : "Copy failed.";
+          buildTemplateController(card, tpl);
         });
       }
 
@@ -434,7 +440,6 @@
         });
 
         regenerate();
-        return { output: () => output.value, name: () => template.name || "template" };
       }
 
       async function copyText(text) {
@@ -447,9 +452,9 @@
       }
 
       function showReady(source) {
-        const fallback = source.includes("fallback");
-        el.status.className = `alert ${fallback ? "alert-warning" : "alert-success"} d-flex align-items-center gap-2 mb-3`;
-        el.status.innerHTML = `<i class="bi ${fallback ? "bi-exclamation-triangle" : "bi-check2-circle"}"></i><span>Loaded ${state.data.prompts.length} prompts from <code>${escapeHtml(source)}</code>.</span>`;
+        // Hide loader/status once prompts are ready.
+        el.status.className = "d-none";
+        el.status.innerHTML = "";
       }
 
       function showError(message) {

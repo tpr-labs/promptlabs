@@ -9,6 +9,7 @@
       "tags": ["handwritten", "notes", "sketchnote", "visual thinking"],
       "model": "gemini",
       "description": "To generate the beautiful handwritten notes for the user query",
+      "steps": "First use the `handwritten_notes_template_planner` template to understand the user query and generate structured notes. Then use the `handwritten_notes_template_image_generator` template to convert the structured notes into visually appealing handwritten notes.",
       "templates": [
         {
             "sequence": 1,
@@ -53,6 +54,7 @@
       "tags": ["technical description", "infographic", "isometric", "3D perspective", "annotations"],
       "model": "gemini",
       "description": "To generate an image of technical description of an object based on its attributes and characteristics",
+      "steps": "Use the `object_technical_description_template` template to create a detailed technical infographic of the specified object, incorporating various annotations, labels, and visual elements to effectively communicate its technical details.",
       "templates": [
         {
             "sequence": 1,
