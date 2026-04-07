@@ -1,0 +1,81 @@
+{
+  "version": "1.0.0",
+  "description": "Initial version of prompts for agents",
+  "prompts": [
+    {
+      "name": "handwritten_notes_prompt",
+      "display_name": "Handwritten Notes Prompt",
+      "category": "handwritten",
+      "tags": ["handwritten", "notes", "sketchnote", "visual thinking"],
+      "model": "gemini",
+      "description": "To generate the beautiful handwritten notes for the user query",
+      "templates": [
+        {
+            "sequence": 1,
+            "name": "handwritten_notes_template_planner",
+            "description": "to understand the user query and generate structured notes",
+            "template": "identify and explain $topic. Be specific and to the point. Provide relevant examples. Audience is $audience",
+            "variables": [
+                {
+                    "name": "topic",
+                    "description": "The specific topic or subject that the user query is about. This should be a concise phrase that captures the main focus of the query.",
+                    "default": "",
+                    "required": true
+                },
+                {
+                    "name": "audience",
+                    "description": "The intended audience for the sketchnote. This could be a specific group of people such as 'software engineers', 'data scientists', 'business analysts', etc., and will help tailor the content and style of the notes.",
+                    "default": "",
+                    "required": true
+                }
+            ]
+        },
+        {
+          "sequence": 2,
+          "name": "handwritten_notes_template_image_generator",
+          "description": "to convert the structured notes into visually appealing handwritten notes",
+          "template": "Create a hand-drawn sketchnote visual summary of these notes. Use a pristine white paper background (no lines). The art style should be `graphic recording' or 'visual thinking' using black ink fine-liners for clear outlines and text. Use colored markers (specifically teal, orange, and muted red) for simple shading and accents. Center the main title in a 3D-style rectangular box. Surround the title with radially distributed simple doodles, business icons, stick figures, and graphs: that explain the concepts. Use arrows to connect ideas. The text should be distinct, handwritten, all-caps printing, legible and organized like a professional brainstorming session. $resolution",
+          "variables": [
+            {
+              "name": "resolution",
+              "description": "to specify the image resolution for the generated sketchnote. This could be in the format of '800x600 pixels', '1024x768 pixels', etc., depending on the desired level of detail and clarity for the handwritten notes.",
+              "default": "16:9",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "object_technical_description_prompt",
+      "display_name": "Object Technical Description Prompt",
+      "category": "technical_description",
+      "tags": ["technical description", "infographic", "isometric", "3D perspective", "annotations"],
+      "model": "gemini",
+      "description": "To generate an image of technical description of an object based on its attributes and characteristics",
+      "templates": [
+        {
+            "sequence": 1,
+            "name": "object_technical_description_template",
+            "description": "to describe the technical details of an object based on its attributes and characteristics",
+            "template": "Create a technical infographic of $object with a 45-degree isometric 3D perspective showing the device slightly tilted to reveal depth and dimension.\\nCombine a realistic photoreal render with black ink technical annotations on a pure white background. Include:\\nA) Key component labels with color-coded callout boxes. Do not repeat a label more than once.\\nB) Internal component visibility through transparent/cutaway sections.\\nC) Measurements, dimensions, and precise scale markers.\\nD) Material callouts and quantities.\\nE) Color-coded arrows for function/flow: RED (power/battery), BLUE (data/connectivity), ORANGE (thermal/processor), GREEN (sensors/haptics).\\nF) Simple schematics or cross-sectional diagrams where relevant.\\n\\nPlace $object] title in a hand-drawn technical box (top-left corner).\\n\\nStyle: Black linework (technical pen/architectural), sketched but precise. Object remains clearly visible. Educational museum-exhibit vibe. Clean composition, balanced negative space. Perspective: Isometric 3D angle—tilted to show depth, dimension, and internal architecture dramatically. Like a professional product teardown or engineering manual. Colors: ~10-15% accent density. Black dominant. White background. Output: $resolution, ultra-crisp, social-feed optimized.",
+            "variables": [
+                {
+                    "name": "object",
+                    "description": "Specify the object for which the technical description is to be generated. This could be any physical device, machine, or piece of technology such as 'smartphone', 'laptop', 'car engine', 'drone', etc. The more specific the object, the more detailed and accurate the technical description can be.",
+                    "default": "",
+                    "required": true
+                },
+                {
+                    "name": "resolution",
+                    "description": "to specify the image resolution for the generated technical infographic. This could be in the format of '800x600 pixels', '1024x768 pixels', etc., depending on the desired level of detail and clarity for the technical description.",
+                    "default": "1080×1080",
+                    "required": true
+                }
+            ]
+        }
+      ]
+    }
+  ]
+}
+
