@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="PromptLabs prompt browser and composer" />
+  <title>PromptLabs</title>
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f59e0b'/%3E%3Cstop offset='100%25' stop-color='%23eab308'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230b0b0c'/%3E%3Cpath d='M14 18h32a8 8 0 0 1 0 16H28l-10 10V34h-4z' fill='url(%23g)'/%3E%3Ccircle cx='47' cy='45' r='9' fill='none' stroke='%23d4d4d8' stroke-width='3'/%3E%3Cpath d='M53 51l6 6' stroke='%23d4d4d8' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E"
+  />
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+  <style>
+    :root {
+      --bg: #0b0b0c;
+      --surface: #151516;
+      --surface-2: #1d1d1f;
+      --border: #313135;
+      --text-soft: #a1a1aa;
+      --accent: #f59e0b;
+    }
+
+    body {
+      background: linear-gradient(180deg, #0f0f10 0%, #09090b 100%);
+      min-height: 100vh;
+      color: #e4e4e7;
+    }
+
+    .app-header {
+      background: rgba(11, 11, 12, 0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+
+    .surface {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .surface-2 {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .category-btn {
+      border: 1px solid var(--border);
+      background: #111113;
+      color: #d4d4d8;
+      border-radius: 999px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.82rem;
+    }
+
+    .category-btn.active {
+      border-color: #d97706;
+      background: rgba(245, 158, 11, 0.15);
+      color: #fde68a;
+    }
+
+    .prompt-item {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      background: #18181b;
+      color: inherit;
+      border-radius: 12px;
+      padding: 0.75rem;
+    }
+
+    .prompt-item.active,
+    .prompt-item:hover {
+      border-color: #a16207;
+      background: #1f1f23;
+    }
+
+    .tag-badge {
+      background: #0f0f10;
+      border: 1px solid #3f3f46;
+      color: #d4d4d8;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .output-textarea {
+      min-height: 190px;
+      resize: vertical;
+    }
+
+    @media (max-width: 991.98px) {
+      .output-textarea {
+        min-height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header sticky-top py-2">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-light btn-sm d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#browseDrawer" type="button">
+          <i class="bi bi-list"></i>
+        </button>
+        <div class="fw-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-stars" style="color: var(--accent);"></i>
+          <span>PromptLabs</span>
+        </div>
+        <div class="ms-auto" style="max-width: 500px; width: 100%;">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input id="searchInput" class="form-control" type="search" placeholder="Search prompts, category, tags..." />
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container-fluid py-3">
+    <div class="row g-3">
+      <aside class="col-lg-4 col-xl-3 d-none d-lg-block">
+        <div class="surface p-3 h-100">
+          <div class="small text-secondary mb-2">Categories</div>
+          <div id="categoryDesktop" class="d-flex flex-wrap gap-2 mb-3"></div>
+          <div class="small text-secondary mb-2">Prompts</div>
+          <div id="promptDesktop" class="vstack gap-2"></div>
+        </div>
+      </aside>
+
+      <main class="col-12 col-lg-8 col-xl-9">
+        <div id="statusBanner" class="alert alert-secondary d-flex align-items-center gap-2 mb-3" role="status">
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          <span>Loading templates…</span>
+        </div>
+        <section id="promptDetails" class="d-none"></section>
+      </main>
+    </div>
+  </div>
+
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="browseDrawer">
+    <div class="offcanvas-header">
+      <h2 class="offcanvas-title h6 mb-0"><i class="bi bi-compass me-2"></i>Browse</h2>
+      <button class="btn-close" type="button" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="small text-secondary mb-2">Categories</div>
+      <div id="categoryMobile" class="d-flex flex-wrap gap-2 mb-3"></div>
+      <div class="small text-secondary mb-2">Prompts</div>
+      <div id="promptMobile" class="vstack gap-2"></div>
+    </div>
+  </div>
+
+  <script id="inlineTemplateData" type="application/json">{"version":"1.0.0","description":"Initial version of prompts for agents","prompts":[{"name":"handwritten_notes_prompt","display_name":"Handwritten Notes Prompt","category":"handwritten","tags":["handwritten","notes","sketchnote","visual thinking"],"model":"gemini","description":"To generate the beautiful handwritten notes for the user query","templates":[{"sequence":1,"name":"handwritten_notes_template_planner","description":"to understand the user query and generate structured notes","template":"identify and explain $topic. Be specific and to the point. Provide relevant examples. Audience is $audience","variables":[{"name":"topic","description":"The specific topic or subject that the user query is about.","default":"","required":true},{"name":"audience","description":"The intended audience for the sketchnote.","default":"","required":true}]},{"sequence":2,"name":"handwritten_notes_template_image_generator","description":"to convert the structured notes into visually appealing handwritten notes","template":"Create a hand-drawn sketchnote visual summary of these notes. $resolution","variables":[{"name":"resolution","description":"Image resolution","default":"16:9","required":true}]}]},{"name":"object_technical_description_prompt","display_name":"Object Technical Description Prompt","category":"technical_description","tags":["technical description","infographic","isometric","3D perspective","annotations"],"model":"gemini","description":"To generate an image of technical description of an object based on its attributes and characteristics","templates":[{"sequence":1,"name":"object_technical_description_template","description":"to describe the technical details of an object based on its attributes and characteristics","template":"Create a technical infographic of $object. Output: $resolution.","variables":[{"name":"object","description":"Object name","default":"","required":true},{"name":"resolution","description":"Image resolution","default":"1080×1080","required":true}]}]}]}</script>
+
+  <script>
+    (() => {
+      "use strict";
+      const TEMPLATE_URL = "https://raw.githubusercontent.com/tpr-labs/promptlabs/refs/heads/main/template.json";
+
+      const state = { data: null, category: "all", promptName: null, search: "" };
+
+      const el = {
+        status: document.getElementById("statusBanner"),
+        details: document.getElementById("promptDetails"),
+        search: document.getElementById("searchInput"),
+        cDesktop: document.getElementById("categoryDesktop"),
+        cMobile: document.getElementById("categoryMobile"),
+        pDesktop: document.getElementById("promptDesktop"),
+        pMobile: document.getElementById("promptMobile"),
+      };
+
+      init();
+
+      async function init() {
+        try {
+          const { data, source } = await loadData();
+          if (!data || !Array.isArray(data.prompts)) throw new Error("Invalid template JSON format");
+          data.prompts = data.prompts.map(normalizePrompt);
+          state.data = data;
+
+          el.search.addEventListener("input", () => {
+            state.search = el.search.value.trim().toLowerCase();
+            ensureSelection();
+            renderAll();
+          });
+
+          ensureSelection();
+          renderAll();
+          showReady(source);
+        } catch (error) {
+          showError(error instanceof Error ? error.message : String(error));
+        }
+      }
+
+      async function loadData() {
+        try {
+          const r = await fetch(TEMPLATE_URL, { cache: "no-store" });
+          if (!r.ok) throw new Error(`HTTP ${r.status} while fetching ${TEMPLATE_URL}`);
+          return { data: await r.json(), source: TEMPLATE_URL };
+        } catch (err) {
+          if (location.protocol === "file:") {
+            const inline = document.getElementById("inlineTemplateData")?.textContent;
+            if (inline?.trim()) return { data: JSON.parse(inline), source: "inline fallback (file:// mode)" };
+          }
+          throw err;
+        }
+      }
+
+      function normalizePrompt(prompt) {
+        return {
+          ...prompt,
+          category: String(prompt.category || "uncategorized").trim() || "uncategorized",
+          tags: Array.isArray(prompt.tags) ? prompt.tags.map(String).map((s) => s.trim()).filter(Boolean) : [],
+        };
+      }
+
+      function filteredPrompts() {
+        return state.data.prompts.filter((p) => {
+          const byCategory = state.category === "all" || p.category === state.category;
+          if (!byCategory) return false;
+          if (!state.search) return true;
+          const text = [p.display_name, p.name, p.description, p.category, ...(p.tags || [])].join(" ").toLowerCase();
+          return text.includes(state.search);
+        });
+      }
+
+      function categoryList() {
+        return ["all", ...new Set(state.data.prompts.map((p) => p.category))];
+      }
+
+      function ensureSelection() {
+        const prompts = filteredPrompts();
+        if (!prompts.some((p) => p.name === state.promptName)) state.promptName = prompts[0]?.name || null;
+      }
+
+      function renderAll() {
+        renderCategories(el.cDesktop);
+        renderCategories(el.cMobile);
+        renderPrompts(el.pDesktop);
+        renderPrompts(el.pMobile);
+        renderDetails();
+      }
+
+      function renderCategories(container) {
+        container.innerHTML = "";
+        categoryList().forEach((cat) => {
+          const count = state.data.prompts.filter((p) => {
+            const c = cat === "all" || p.category === cat;
+            if (!c) return false;
+            if (!state.search) return true;
+            const text = [p.display_name, p.name, p.description, p.category, ...(p.tags || [])].join(" ").toLowerCase();
+            return text.includes(state.search);
+          }).length;
+
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = `category-btn ${state.category === cat ? "active" : ""}`;
+          b.innerHTML = `${escapeHtml(cat)} <span class="badge text-bg-dark ms-1">${count}</span>`;
+          b.addEventListener("click", () => {
+            state.category = cat;
+            ensureSelection();
+            renderAll();
+          });
+          container.appendChild(b);
+        });
+      }
+
+      function renderPrompts(container) {
+        container.innerHTML = "";
+        const prompts = filteredPrompts();
+        if (!prompts.length) {
+          container.innerHTML = '<div class="small text-secondary">No prompts found.</div>';
+          return;
+        }
+
+        prompts.forEach((p) => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = `prompt-item ${state.promptName === p.name ? "active" : ""}`;
+          item.innerHTML = `
+            <div class="fw-semibold">${escapeHtml(p.display_name || p.name)}</div>
+            <div class="small text-secondary text-truncate mb-2">${escapeHtml(p.description || "No description")}</div>
+            <div class="d-flex flex-wrap gap-1">
+              <span class="badge text-bg-warning text-dark"><i class="bi bi-diagram-3 me-1"></i>${escapeHtml(p.category)}</span>
+              ${(p.tags || []).slice(0, 3).map((t) => `<span class="badge tag-badge">${escapeHtml(t)}</span>`).join("")}
+            </div>
+          `;
+          item.addEventListener("click", () => {
+            state.promptName = p.name;
+            renderPrompts(el.pDesktop);
+            renderPrompts(el.pMobile);
+            renderDetails();
+            bootstrap.Offcanvas.getInstance(document.getElementById("browseDrawer"))?.hide();
+          });
+          container.appendChild(item);
+        });
+      }
+
+      function renderDetails() {
+        const prompt = filteredPrompts().find((p) => p.name === state.promptName);
+        if (!prompt) {
+          el.details.classList.remove("d-none");
+          el.details.innerHTML = '<div class="alert alert-warning">Select a prompt.</div>';
+          return;
+        }
+
+        const templates = [...(prompt.templates || [])].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+        el.details.classList.remove("d-none");
+        el.details.innerHTML = `
+          <div class="surface p-3 p-md-4 mb-3">
+            <div class="d-flex flex-wrap justify-content-between gap-2">
+              <div>
+                <h1 class="h4 mb-1">${escapeHtml(prompt.display_name || prompt.name)}</h1>
+                <p class="mb-2" style="color:var(--text-soft);">${escapeHtml(prompt.description || "No description")}</p>
+                <div class="d-flex flex-wrap gap-1">
+                  <span class="badge text-bg-warning text-dark"><i class="bi bi-diagram-3 me-1"></i>${escapeHtml(prompt.category)}</span>
+                  <span class="badge text-bg-secondary"><i class="bi bi-cpu me-1"></i>${escapeHtml(prompt.model || "unknown")}</span>
+                  ${(prompt.tags || []).map((t) => `<span class="badge tag-badge">${escapeHtml(t)}</span>`).join("")}
+                </div>
+              </div>
+              <button id="copyAllBtn" type="button" class="btn btn-outline-warning btn-sm"><i class="bi bi-clipboard-check me-1"></i>Copy All</button>
+            </div>
+            <div id="copyAllFeedback" class="small text-success mt-2"></div>
+          </div>
+          <div id="templatesRoot" class="vstack gap-3"></div>
+        `;
+
+        const root = document.getElementById("templatesRoot");
+        const controllers = [];
+
+        templates.forEach((tpl, i) => {
+          const card = document.createElement("section");
+          card.className = "surface-2 p-3";
+          card.innerHTML = `
+            <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+              <div>
+                <h2 class="h6 mb-1"><i class="bi bi-braces-asterisk me-1" style="color:var(--accent);"></i>#${escapeHtml(String(tpl.sequence ?? i + 1))} ${escapeHtml(tpl.name || "template")}</h2>
+                <p class="small mb-0" style="color:var(--text-soft);">${escapeHtml(tpl.description || "")}</p>
+              </div>
+              <button class="btn btn-outline-light btn-sm" data-copy><i class="bi bi-clipboard me-1"></i>Copy</button>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12 col-xl-4">
+                <label class="form-label fw-semibold"><i class="bi bi-sliders2 me-1"></i>Variables</label>
+                <div data-vars class="vstack gap-2"></div>
+                <label class="small mt-2 mb-1" style="color:var(--text-soft);">Resolved variable values</label>
+                <pre data-vars-json class="form-control mono" style="min-height: 90px;">{}</pre>
+              </div>
+              <div class="col-12 col-xl-8">
+                <label class="form-label fw-semibold"><i class="bi bi-pencil-square me-1"></i>Editable output prompt</label>
+                <textarea data-output class="form-control mono output-textarea"></textarea>
+                <div class="d-flex justify-content-between mt-2">
+                  <button data-regenerate class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-arrow-repeat me-1"></i>Regenerate</button>
+                  <span data-feedback class="small text-success"></span>
+                </div>
+              </div>
+            </div>
+          `;
+          root.appendChild(card);
+          controllers.push(buildTemplateController(card, tpl));
+        });
+
+        document.getElementById("copyAllBtn").addEventListener("click", async () => {
+          const text = controllers.map((c, i) => `### Template ${i + 1}: ${c.name()}\n${c.output()}`).join("\n\n");
+          const ok = await copyText(text);
+          document.getElementById("copyAllFeedback").textContent = ok ? "Copied all outputs." : "Copy failed.";
+        });
+      }
+
+      function buildTemplateController(card, template) {
+        const varsRoot = card.querySelector("[data-vars]");
+        const varsJson = card.querySelector("[data-vars-json]");
+        const output = card.querySelector("[data-output]");
+        const regenerateBtn = card.querySelector("[data-regenerate]");
+        const copyBtn = card.querySelector("[data-copy]");
+        const feedback = card.querySelector("[data-feedback]");
+
+        const defs = Array.isArray(template.variables) ? template.variables : [];
+        const values = {};
+        const base = String(template.template || "");
+
+        defs.forEach((v, idx) => {
+          const name = String(v.name || `var_${idx + 1}`);
+          values[name] = v.default ?? "";
+
+          const box = document.createElement("div");
+          box.innerHTML = `
+            <label class="form-label small mb-1 d-flex justify-content-between">
+              <span>${escapeHtml(name)}</span>
+              ${v.required ? '<span class="text-warning">required</span>' : ""}
+            </label>
+            <input type="text" class="form-control form-control-sm" value="${escapeHtml(String(v.default ?? ""))}" placeholder="${escapeHtml(v.description || "Enter value")}" />
+          `;
+
+          const input = box.querySelector("input");
+          input.addEventListener("input", () => {
+            values[name] = input.value;
+            regenerate();
+          });
+          varsRoot.appendChild(box);
+        });
+
+        function resolve() {
+          let out = base;
+          Object.entries(values).forEach(([key, value]) => {
+            const safe = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            out = out.replace(new RegExp(`\\$${safe}\\b`, "g"), String(value ?? ""));
+          });
+          return out;
+        }
+
+        function regenerate() {
+          output.value = resolve();
+          varsJson.textContent = JSON.stringify(values, null, 2);
+        }
+
+        regenerateBtn.addEventListener("click", regenerate);
+        copyBtn.addEventListener("click", async () => {
+          const ok = await copyText(output.value);
+          feedback.textContent = ok ? "Copied." : "Copy failed.";
+        });
+
+        regenerate();
+        return { output: () => output.value, name: () => template.name || "template" };
+      }
+
+      async function copyText(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      function showReady(source) {
+        const fallback = source.includes("fallback");
+        el.status.className = `alert ${fallback ? "alert-warning" : "alert-success"} d-flex align-items-center gap-2 mb-3`;
+        el.status.innerHTML = `<i class="bi ${fallback ? "bi-exclamation-triangle" : "bi-check2-circle"}"></i><span>Loaded ${state.data.prompts.length} prompts from <code>${escapeHtml(source)}</code>.</span>`;
+      }
+
+      function showError(message) {
+        el.status.className = "alert alert-danger d-flex align-items-center gap-2 mb-3";
+        el.status.innerHTML = `<i class="bi bi-bug"></i><span>${escapeHtml(message)}</span>`;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    })();
+  </script>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+</body>
+</html>
