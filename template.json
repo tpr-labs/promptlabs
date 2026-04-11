@@ -94,6 +94,30 @@
             "variables": []
         }
       ]
+    },
+    {
+      "name": "Old Photo Restoration Prompt",
+      "display_name": "Old Photo Restoration Prompt",
+      "category": "photo_restoration",
+      "tags": [
+        "photo restoration",
+        "old photo",
+        "colorization",
+        "damage repair",
+        "restoration"
+      ],
+      "model": "gemini",
+      "description": "To restore and enhance old, damaged photographs by repairing tears, removing stains, and colorizing black-and-white images while preserving the original details and character of the photo.",
+      "steps": "Use the `old_photo_restoration_template` template to analyze the input photograph, identify areas of damage or degradation, and apply appropriate restoration techniques to produce a revitalized version",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "old_photo_restoration_template",
+          "description": "to restore and enhance old photographs",
+          "template": "Edit this photo into a professional portrait of very high quality and Color, comparable to the results of Canon EOS R5. Create like a recent photo, with great clarity and no noise. Produce razor-sharp photos. Full 4k\nMy thoughts: The clarity and color grading feels very modern. It handled the noise reduction quite well without making the skin look too \"waxy.\"",
+          "variables": []
+        }
+      ]
     }
   ]
 }
