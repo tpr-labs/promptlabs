@@ -277,7 +277,7 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* Output Area */
+        /* Rich Text Output Area */
         .output-box {
             background: #111113;
             border: 1px solid var(--border-highlight);
@@ -286,13 +286,28 @@
             padding: 1rem;
             width: 100%;
             min-height: 220px;
+            white-space: pre-wrap; /* Maintains newlines and spaces */
+            overflow: auto;
             resize: vertical;
             line-height: 1.6;
+            outline: none;
+            transition: border-color 0.2s;
         }
         
         .output-box:focus {
-            outline: none;
-            border-color: var(--text-muted);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        /* Dynamic Variable Highlight Class */
+        .highlight-var {
+            background-color: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 500;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            transition: all 0.2s;
         }
 
         /* Buttons */
@@ -396,12 +411,10 @@
         <aside class="sidebar d-none d-lg-flex">
             <div class="sidebar-section">
                 <div class="form-label mb-2">Categories</div>
-                <div id="categoryDesktop" class="d-flex flex-wrap gap-2">
-                    </div>
+                <div id="categoryDesktop" class="d-flex flex-wrap gap-2"></div>
             </div>
             
-            <div class="prompt-list" id="promptDesktop">
-                </div>
+            <div class="prompt-list" id="promptDesktop"></div>
         </aside>
 
         <div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="browseDrawer">
@@ -512,7 +525,6 @@
                 if (!r.ok) throw new Error("Local fetch failed");
                 return { data: await r.json() };
             } catch (err) {
-                // Fallback to github raw content if local fails
                 console.warn("Falling back to remote URL...");
                 const r2 = await fetch(FALLBACK_URL);
                 if (!r2.ok) throw new Error("Failed to fetch templates.");
@@ -595,7 +607,7 @@
                     renderPrompts(el.pDesktop);
                     renderPrompts(el.pMobile);
                     renderDetails();
-                    // Close mobile offcanvas if open
+                    
                     const drawerEl = document.getElementById("browseDrawer");
                     const bsOffcanvas = bootstrap.Offcanvas.getInstance(drawerEl);
                     if (bsOffcanvas) bsOffcanvas.hide();
@@ -669,7 +681,8 @@
                         
                         <div class="col-12 col-xl-7">
                             <h6 class="form-label mb-3"><i class="bi bi-terminal me-2"></i>Generated Output</h6>
-                            <textarea data-output class="mono output-box shadow-inner"></textarea>
+                            <div data-output class="mono output-box shadow-inner" contenteditable="true" spellcheck="false"></div>
+                            
                             <div class="d-flex justify-content-between align-items-center mt-3">
                                 <button data-regenerate class="btn-action">
                                     <i class="bi bi-arrow-repeat"></i> Regenerate
@@ -722,18 +735,27 @@
                 varsRoot.appendChild(box);
             });
 
-            function resolve() {
-                let out = base;
+            // New resolve function that outputs HTML instead of plain text
+            function resolveHtml() {
+                // First escape the base text to prevent XSS
+                let out = escapeHtml(base);
+                
+                // Replace variables with stylized HTML spans
                 Object.entries(values).forEach(([key, value]) => {
-                    // Replace exact string matches of $variable_name
-                    const safe = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-                    out = out.replace(new RegExp(`\\$${safe}\\b`, "g"), String(value ?? ""));
+                    const safeKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    const safeValue = escapeHtml(String(value ?? ""));
+                    
+                    // Show a placeholder if empty, otherwise show the injected value
+                    const displayValue = safeValue ? safeValue : `<span style="opacity:0.4; font-style:italic;">[$${escapeHtml(key)}]</span>`;
+                    
+                    const highlightHtml = `<span class="highlight-var">${displayValue}</span>`;
+                    out = out.replace(new RegExp(`\\$${safeKey}\\b`, "g"), highlightHtml);
                 });
                 return out;
             }
 
             function regenerate() {
-                output.value = resolve();
+                output.innerHTML = resolveHtml();
                 varsJson.textContent = JSON.stringify(values, null, 2);
                 feedback.textContent = "";
             }
@@ -741,14 +763,20 @@
             regenerateBtn.addEventListener("click", regenerate);
 
             copyBtn.addEventListener("click", () => {
-                const text = output.value;
+                // innerText accurately extracts the plain text from the div, ignoring the HTML highlight spans but keeping newlines
+                const text = output.innerText; 
+                
                 navigator.clipboard.writeText(text).then(() => {
                     showToast("Prompt copied to clipboard!");
                 }).catch(err => {
                     console.error("Failed to copy", err);
-                    // Fallback for older browsers
-                    output.select();
+                    // Fallback
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
                     document.execCommand('copy');
+                    document.body.removeChild(textArea);
                     showToast("Prompt copied to clipboard!");
                 });
             });
