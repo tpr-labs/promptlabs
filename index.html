@@ -1,482 +1,764 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="PromptLabs prompt browser and composer" />
-  <title>PromptLabs</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="PromptLabs - Advanced AI Prompt Composer" />
+    <title>PromptLabs</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
-  <link
-    rel="icon"
-    type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f59e0b'/%3E%3Cstop offset='100%25' stop-color='%23eab308'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230b0b0c'/%3E%3Cpath d='M14 18h32a8 8 0 0 1 0 16H28l-10 10V34h-4z' fill='url(%23g)'/%3E%3Ccircle cx='47' cy='45' r='9' fill='none' stroke='%23d4d4d8' stroke-width='3'/%3E%3Cpath d='M53 51l6 6' stroke='%23d4d4d8' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E"
-  />
+    <style>
+        :root {
+            --bg-base: #09090b;
+            --bg-surface: #18181b;
+            --bg-surface-hover: #27272a;
+            --bg-elevated: #1f1f22;
+            --border-color: #27272a;
+            --border-highlight: #3f3f46;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent-color: #6366f1; /* Modern Indigo */
+            --accent-glow: rgba(99, 102, 241, 0.2);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
 
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-    crossorigin="anonymous"
-  />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-  <style>
-    :root {
-      --bg: #0b0b0c;
-      --surface: #151516;
-      --surface-2: #1d1d1f;
-      --border: #313135;
-      --text-soft: #a1a1aa;
-      --accent: #f59e0b;
-    }
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-    body {
-      background: linear-gradient(180deg, #0f0f10 0%, #09090b 100%);
-      min-height: 100vh;
-      color: #e4e4e7;
-    }
+        /* Typography & Utilities */
+        .mono { font-family: 'Fira Code', monospace; font-size: 0.85rem; }
+        .text-muted { color: var(--text-muted) !important; }
+        
+        /* App Header */
+        .app-header {
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            z-index: 10;
+        }
 
-    .app-header {
-      background: rgba(11, 11, 12, 0.92);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(8px);
-    }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+        }
 
-    .surface {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-    }
+        .brand-icon {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            filter: drop-shadow(0 0 8px var(--accent-glow));
+        }
 
-    .surface-2 {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-    }
+        /* Search Bar */
+        .search-wrapper {
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .search-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
 
-    .category-btn {
-      border: 1px solid var(--border);
-      background: #111113;
-      color: #d4d4d8;
-      border-radius: 999px;
-      padding: 0.3rem 0.7rem;
-      font-size: 0.82rem;
-    }
+        .search-input {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 99px;
+            padding: 0.4rem 1rem 0.4rem 2.2rem;
+            width: 100%;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
 
-    .category-btn.active {
-      border-color: #d97706;
-      background: rgba(245, 158, 11, 0.15);
-      color: #fde68a;
-    }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: var(--bg-base);
+        }
 
-    .prompt-item {
-      width: 100%;
-      text-align: left;
-      border: 1px solid var(--border);
-      background: #18181b;
-      color: inherit;
-      border-radius: 12px;
-      padding: 0.75rem;
-    }
+        /* Layout Grid */
+        .app-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
 
-    .prompt-item.active,
-    .prompt-item:hover {
-      border-color: #a16207;
-      background: #1f1f23;
-    }
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
 
-    .tag-badge {
-      background: #0f0f10;
-      border: 1px solid #3f3f46;
-      color: #d4d4d8;
-    }
+        .sidebar-section {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
+        /* Categories */
+        .category-pill {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 99px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    .output-textarea {
-      min-height: 190px;
-      resize: vertical;
-    }
+        .category-pill:hover {
+            border-color: var(--border-highlight);
+            color: var(--text-main);
+        }
 
-    .btn-copy-template,
-    .btn-copy-template:hover,
-    .btn-copy-template:focus,
-    .btn-copy-template:active {
-      background: transparent !important;
-      color: #e4e4e7 !important;
-      border-color: #52525b !important;
-      box-shadow: none !important;
-    }
+        .category-pill.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
 
-    @media (max-width: 991.98px) {
-      .output-textarea {
-        min-height: 240px;
-      }
-    }
-  </style>
+        .category-pill .badge {
+            background: var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            padding: 0.2em 0.5em;
+            border-radius: 99px;
+        }
+
+        .category-pill.active .badge {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Prompt List Items */
+        .prompt-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .prompt-card {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            padding: 0.85rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .prompt-card:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-color);
+        }
+
+        .prompt-card.active {
+            background: var(--bg-elevated);
+            border-color: var(--border-highlight);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .prompt-card.active::before {
+            content: '';
+            position: absolute;
+            left: -1px;
+            top: 10%;
+            height: 80%;
+            width: 3px;
+            background: var(--accent-color);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Tags */
+        .tag {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Main Stage (Composer) */
+        .main-stage {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.03), transparent 40%), var(--bg-base);
+        }
+
+        .stage-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .prompt-header {
+            margin-bottom: 2rem;
+        }
+
+        /* Template Step Cards */
+        .template-step {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Form Inputs */
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .custom-input {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .custom-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Output Area */
+        .output-box {
+            background: #111113;
+            border: 1px solid var(--border-highlight);
+            border-radius: var(--radius-md);
+            color: #d4d4d8;
+            padding: 1rem;
+            width: 100%;
+            min-height: 220px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        
+        .output-box:focus {
+            outline: none;
+            border-color: var(--text-muted);
+        }
+
+        /* Buttons */
+        .btn-action {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-action:hover {
+            background: var(--bg-surface-hover);
+            border-color: var(--border-highlight);
+        }
+
+        .btn-action.primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-action.primary:hover {
+            background: #4f46e5;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1050;
+        }
+        .custom-toast {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-highlight);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .custom-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
-  <header class="app-header sticky-top py-2">
-    <div class="container-fluid">
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-light btn-sm d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#browseDrawer" type="button">
-          <i class="bi bi-list"></i>
-        </button>
-        <div class="fw-semibold d-flex align-items-center gap-2">
-          <i class="bi bi-stars" style="color: var(--accent);"></i>
-          <span>PromptLabs</span>
+
+    <header class="app-header d-flex align-items-center justify-content-between">
+        <div class="brand-logo">
+            <i class="bi bi-layers-half brand-icon"></i>
+            <span>PromptLabs</span>
         </div>
-        <div class="ms-auto" style="max-width: 500px; width: 100%;">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input id="searchInput" class="form-control" type="search" placeholder="Search prompts, category, tags..." />
-          </div>
+        
+        <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input id="searchInput" class="search-input" type="search" placeholder="Search prompts, categories, tags..." />
         </div>
-      </div>
-    </div>
-  </header>
-
-  <div class="container-fluid py-3">
-    <div class="row g-3">
-      <aside class="col-lg-4 col-xl-3 d-none d-lg-block">
-        <div class="surface p-3 h-100">
-          <div class="small text-secondary mb-2">Categories</div>
-          <div id="categoryDesktop" class="d-flex flex-wrap gap-2 mb-3"></div>
-          <div class="small text-secondary mb-2">Prompts</div>
-          <div id="promptDesktop" class="vstack gap-2"></div>
+        
+        <div class="d-none d-md-flex align-items-center">
+            <button class="btn-action" style="padding: 0.4rem; border-radius: 50%; width: 36px; height: 36px; justify-content: center;">
+                <i class="bi bi-gear"></i>
+            </button>
         </div>
-      </aside>
+    </header>
 
-      <main class="col-12 col-lg-8 col-xl-9">
-        <div id="statusBanner" class="alert alert-secondary d-flex align-items-center gap-2 mb-3" role="status">
-          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-          <span>Loading templates…</span>
-        </div>
-        <section id="promptDetails" class="d-none"></section>
-      </main>
-    </div>
-  </div>
-
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="browseDrawer">
-    <div class="offcanvas-header">
-      <h2 class="offcanvas-title h6 mb-0"><i class="bi bi-compass me-2"></i>Browse</h2>
-      <button class="btn-close" type="button" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body">
-      <div class="small text-secondary mb-2">Categories</div>
-      <div id="categoryMobile" class="d-flex flex-wrap gap-2 mb-3"></div>
-      <div class="small text-secondary mb-2">Prompts</div>
-      <div id="promptMobile" class="vstack gap-2"></div>
-    </div>
-  </div>
-
-  <script id="inlineTemplateData" type="application/json">{"version":"1.0.0","description":"Initial version of prompts for agents","prompts":[{"name":"handwritten_notes_prompt","display_name":"Handwritten Notes Prompt","category":"handwritten","tags":["handwritten","notes","sketchnote","visual thinking"],"model":"gemini","description":"To generate the beautiful handwritten notes for the user query","templates":[{"sequence":1,"name":"handwritten_notes_template_planner","description":"to understand the user query and generate structured notes","template":"identify and explain $topic. Be specific and to the point. Provide relevant examples. Audience is $audience","variables":[{"name":"topic","description":"The specific topic or subject that the user query is about.","default":"","required":true},{"name":"audience","description":"The intended audience for the sketchnote.","default":"","required":true}]},{"sequence":2,"name":"handwritten_notes_template_image_generator","description":"to convert the structured notes into visually appealing handwritten notes","template":"Create a hand-drawn sketchnote visual summary of these notes. $resolution","variables":[{"name":"resolution","description":"Image resolution","default":"16:9","required":true}]}]},{"name":"object_technical_description_prompt","display_name":"Object Technical Description Prompt","category":"technical_description","tags":["technical description","infographic","isometric","3D perspective","annotations"],"model":"gemini","description":"To generate an image of technical description of an object based on its attributes and characteristics","templates":[{"sequence":1,"name":"object_technical_description_template","description":"to describe the technical details of an object based on its attributes and characteristics","template":"Create a technical infographic of $object. Output: $resolution.","variables":[{"name":"object","description":"Object name","default":"","required":true},{"name":"resolution","description":"Image resolution","default":"1080×1080","required":true}]}]}]}</script>
-
-  <script>
-    (() => {
-      "use strict";
-      const TEMPLATE_URL = "./template.json";
-
-      const state = { data: null, category: "all", promptName: null, search: "" };
-
-      const el = {
-        status: document.getElementById("statusBanner"),
-        details: document.getElementById("promptDetails"),
-        search: document.getElementById("searchInput"),
-        cDesktop: document.getElementById("categoryDesktop"),
-        cMobile: document.getElementById("categoryMobile"),
-        pDesktop: document.getElementById("promptDesktop"),
-        pMobile: document.getElementById("promptMobile"),
-      };
-
-      init();
-
-      async function init() {
-        try {
-          const { data, source } = await loadData();
-          if (!data || !Array.isArray(data.prompts)) throw new Error("Invalid template JSON format");
-          data.prompts = data.prompts.map(normalizePrompt);
-          state.data = data;
-
-          el.search.addEventListener("input", () => {
-            state.search = el.search.value.trim().toLowerCase();
-            ensureSelection();
-            renderAll();
-          });
-
-          ensureSelection();
-          renderAll();
-          showReady(source);
-        } catch (error) {
-          showError(error instanceof Error ? error.message : String(error));
-        }
-      }
-
-      async function loadData() {
-        try {
-          const r = await fetch(TEMPLATE_URL, { cache: "no-store" });
-          if (!r.ok) throw new Error(`HTTP ${r.status} while fetching ${TEMPLATE_URL}`);
-          return { data: await r.json(), source: TEMPLATE_URL };
-        } catch (err) {
-          if (location.protocol === "file:") {
-            const inline = document.getElementById("inlineTemplateData")?.textContent;
-            if (inline?.trim()) return { data: JSON.parse(inline), source: "inline fallback (file:// mode)" };
-          }
-          throw err;
-        }
-      }
-
-      function normalizePrompt(prompt) {
-        return {
-          ...prompt,
-          category: String(prompt.category || "uncategorized").trim() || "uncategorized",
-          tags: Array.isArray(prompt.tags) ? prompt.tags.map(String).map((s) => s.trim()).filter(Boolean) : [],
-        };
-      }
-
-      function filteredPrompts() {
-        return state.data.prompts.filter((p) => {
-          const byCategory = state.category === "all" || p.category === state.category;
-          if (!byCategory) return false;
-          if (!state.search) return true;
-          const text = [p.display_name, p.name, p.description, p.steps, p.category, ...(p.tags || [])].join(" ").toLowerCase();
-          return text.includes(state.search);
-        });
-      }
-
-      function categoryList() {
-        return ["all", ...new Set(state.data.prompts.map((p) => p.category))];
-      }
-
-      function ensureSelection() {
-        const prompts = filteredPrompts();
-        if (!prompts.some((p) => p.name === state.promptName)) state.promptName = null;
-      }
-
-      function renderAll() {
-        renderCategories(el.cDesktop);
-        renderCategories(el.cMobile);
-        renderPrompts(el.pDesktop);
-        renderPrompts(el.pMobile);
-        renderDetails();
-      }
-
-      function renderCategories(container) {
-        container.innerHTML = "";
-        categoryList().forEach((cat) => {
-          const count = state.data.prompts.filter((p) => {
-            const c = cat === "all" || p.category === cat;
-            if (!c) return false;
-            if (!state.search) return true;
-            const text = [p.display_name, p.name, p.description, p.steps, p.category, ...(p.tags || [])].join(" ").toLowerCase();
-            return text.includes(state.search);
-          }).length;
-
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = `category-btn ${state.category === cat ? "active" : ""}`;
-          b.innerHTML = `${escapeHtml(cat)} <span class="badge text-bg-dark ms-1">${count}</span>`;
-          b.addEventListener("click", () => {
-            state.category = cat;
-            ensureSelection();
-            renderAll();
-          });
-          container.appendChild(b);
-        });
-      }
-
-      function renderPrompts(container) {
-        container.innerHTML = "";
-        const prompts = filteredPrompts();
-        if (!prompts.length) {
-          container.innerHTML = '<div class="small text-secondary">No prompts found.</div>';
-          return;
-        }
-
-        prompts.forEach((p) => {
-          const item = document.createElement("button");
-          item.type = "button";
-          item.className = `prompt-item ${state.promptName === p.name ? "active" : ""}`;
-          item.innerHTML = `
-            <div class="fw-semibold">${escapeHtml(p.display_name || p.name)}</div>
-            <div class="small text-secondary text-truncate mb-2">${escapeHtml(p.description || "No description")}</div>
-            <div class="d-flex flex-wrap gap-1">
-              <span class="badge text-bg-warning text-dark"><i class="bi bi-diagram-3 me-1"></i>${escapeHtml(p.category)}</span>
-              ${(p.tags || []).slice(0, 3).map((t) => `<span class="badge tag-badge">${escapeHtml(t)}</span>`).join("")}
+    <div class="app-body">
+        
+        <aside class="sidebar d-none d-lg-flex">
+            <div class="sidebar-section">
+                <div class="form-label mb-2">Categories</div>
+                <div id="categoryDesktop" class="d-flex flex-wrap gap-2">
+                    </div>
             </div>
-          `;
-          item.addEventListener("click", () => {
-            state.promptName = p.name;
+            
+            <div class="prompt-list" id="promptDesktop">
+                </div>
+        </aside>
+
+        <div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="browseDrawer">
+            <div class="offcanvas-header border-bottom border-secondary">
+                <h5 class="offcanvas-title text-light"><i class="bi bi-layers-half text-primary me-2"></i>PromptLabs</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body p-0 d-flex flex-column h-100" style="background: var(--bg-surface);">
+                <div class="sidebar-section">
+                    <div id="categoryMobile" class="d-flex flex-wrap gap-2"></div>
+                </div>
+                <div class="prompt-list" id="promptMobile"></div>
+            </div>
+        </div>
+
+        <main class="main-stage">
+            <div class="d-lg-none mb-3">
+                <button class="btn-action" data-bs-toggle="offcanvas" data-bs-target="#browseDrawer">
+                    <i class="bi bi-list"></i> Browse Prompts
+                </button>
+            </div>
+            
+            <div class="stage-container" id="detailsView">
+                <div class="empty-state">
+                    <i class="bi bi-magic"></i>
+                    <h4>Welcome to PromptLabs</h4>
+                    <p>Select a prompt from the sidebar to start composing.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const TEMPLATE_URL = "template.json";
+        const FALLBACK_URL = "https://raw.githubusercontent.com/tpr-labs/promptlabs/main/template.json";
+
+        const state = {
+            data: { prompts: [] },
+            category: "all",
+            search: "",
+            promptName: null,
+        };
+
+        const el = {
+            search: document.getElementById("searchInput"),
+            cDesktop: document.getElementById("categoryDesktop"),
+            cMobile: document.getElementById("categoryMobile"),
+            pDesktop: document.getElementById("promptDesktop"),
+            pMobile: document.getElementById("promptMobile"),
+            details: document.getElementById("detailsView"),
+        };
+
+        // Escapes HTML to prevent XSS
+        const escapeHtml = (unsafe) => {
+            return (unsafe || "").toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+
+        // Custom Toast Notification
+        function showToast(message, icon = "bi-check-circle-fill") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = "custom-toast";
+            toast.innerHTML = `<i class="bi ${icon} text-success"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add("show"), 10);
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function init() {
+            try {
+                const { data } = await loadData();
+                if (!data || !Array.isArray(data.prompts)) throw new Error("Invalid template JSON format");
+                
+                state.data.prompts = data.prompts.map(p => ({
+                    ...p,
+                    category: String(p.category || "uncategorized").trim(),
+                    tags: Array.isArray(p.tags) ? p.tags.map(String).map(s => s.trim()).filter(Boolean) : []
+                }));
+
+                el.search.addEventListener("input", () => {
+                    state.search = el.search.value.trim().toLowerCase();
+                    ensureSelection();
+                    renderAll();
+                });
+
+                ensureSelection();
+                renderAll();
+            } catch (error) {
+                el.details.innerHTML = `<div class="alert alert-danger shadow-sm border-0 bg-danger text-white"><i class="bi bi-exclamation-triangle-fill me-2"></i>Failed to load prompts: ${error.message}</div>`;
+            }
+        }
+
+        async function loadData() {
+            try {
+                const r = await fetch(TEMPLATE_URL, { cache: "no-store" });
+                if (!r.ok) throw new Error("Local fetch failed");
+                return { data: await r.json() };
+            } catch (err) {
+                // Fallback to github raw content if local fails
+                console.warn("Falling back to remote URL...");
+                const r2 = await fetch(FALLBACK_URL);
+                if (!r2.ok) throw new Error("Failed to fetch templates.");
+                return { data: await r2.json() };
+            }
+        }
+
+        function filteredPrompts() {
+            return state.data.prompts.filter((p) => {
+                const byCategory = state.category === "all" || p.category === state.category;
+                if (!byCategory) return false;
+                if (!state.search) return true;
+                const text = [p.display_name, p.name, p.description, p.steps, p.category, ...(p.tags || [])].join(" ").toLowerCase();
+                return text.includes(state.search);
+            });
+        }
+
+        function categoryList() {
+            return ["all", ...new Set(state.data.prompts.map((p) => p.category))];
+        }
+
+        function ensureSelection() {
+            const prompts = filteredPrompts();
+            if (!prompts.some((p) => p.name === state.promptName)) {
+                state.promptName = null;
+            }
+        }
+
+        function renderAll() {
+            renderCategories(el.cDesktop);
+            renderCategories(el.cMobile);
             renderPrompts(el.pDesktop);
             renderPrompts(el.pMobile);
             renderDetails();
-            bootstrap.Offcanvas.getInstance(document.getElementById("browseDrawer"))?.hide();
-          });
-          container.appendChild(item);
-        });
-      }
-
-      function renderDetails() {
-        const prompt = filteredPrompts().find((p) => p.name === state.promptName);
-        if (!prompt) {
-          el.details.classList.remove("d-none");
-          el.details.innerHTML = '<div class="alert alert-warning">Select a prompt.</div>';
-          return;
         }
 
-        const templates = [...(prompt.templates || [])].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
-        el.details.classList.remove("d-none");
-        el.details.innerHTML = `
-          <div class="surface p-3 p-md-4 mb-3">
-            <div>
-              <div>
-                <h1 class="h4 mb-1">${escapeHtml(prompt.display_name || prompt.name)}</h1>
-                <p class="mb-2" style="color:var(--text-soft);">${escapeHtml(prompt.description || "No description")}</p>
-                ${prompt.steps ? `<div class="small mb-2" style="color:var(--text-soft);"><i class="bi bi-list-check me-1"></i>${escapeHtml(prompt.steps)}</div>` : ""}
-                <div class="d-flex flex-wrap gap-1">
-                  <span class="badge text-bg-warning text-dark"><i class="bi bi-diagram-3 me-1"></i>${escapeHtml(prompt.category)}</span>
-                  <span class="badge text-bg-secondary"><i class="bi bi-cpu me-1"></i>${escapeHtml(prompt.model || "unknown")}</span>
-                  ${(prompt.tags || []).map((t) => `<span class="badge tag-badge">${escapeHtml(t)}</span>`).join("")}
+        function renderCategories(container) {
+            container.innerHTML = "";
+            categoryList().forEach((cat) => {
+                const count = state.data.prompts.filter((p) => {
+                    if (cat !== "all" && p.category !== cat) return false;
+                    if (!state.search) return true;
+                    const text = [p.display_name, p.name, p.description, p.steps, p.category, ...(p.tags || [])].join(" ").toLowerCase();
+                    return text.includes(state.search);
+                }).length;
+
+                const btn = document.createElement("button");
+                btn.className = `category-pill ${state.category === cat ? "active" : ""}`;
+                btn.innerHTML = `${escapeHtml(cat.charAt(0).toUpperCase() + cat.slice(1))} <span class="badge">${count}</span>`;
+                btn.onclick = () => {
+                    state.category = cat;
+                    ensureSelection();
+                    renderAll();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderPrompts(container) {
+            container.innerHTML = "";
+            const prompts = filteredPrompts();
+            
+            if (!prompts.length) {
+                container.innerHTML = '<div class="text-muted small text-center mt-4">No prompts found matching your criteria.</div>';
+                return;
+            }
+
+            prompts.forEach((p) => {
+                const card = document.createElement("button");
+                card.className = `prompt-card ${state.promptName === p.name ? "active" : ""}`;
+                card.innerHTML = `
+                    <div class="fw-semibold mb-1 text-white">${escapeHtml(p.display_name || p.name)}</div>
+                    <div class="small text-muted text-truncate mb-2">${escapeHtml(p.description || "No description provided")}</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        <span class="tag"><i class="bi bi-folder2 me-1"></i>${escapeHtml(p.category)}</span>
+                    </div>
+                `;
+                card.onclick = () => {
+                    state.promptName = p.name;
+                    renderPrompts(el.pDesktop);
+                    renderPrompts(el.pMobile);
+                    renderDetails();
+                    // Close mobile offcanvas if open
+                    const drawerEl = document.getElementById("browseDrawer");
+                    const bsOffcanvas = bootstrap.Offcanvas.getInstance(drawerEl);
+                    if (bsOffcanvas) bsOffcanvas.hide();
+                };
+                container.appendChild(card);
+            });
+        }
+
+        function renderDetails() {
+            const prompt = filteredPrompts().find((p) => p.name === state.promptName);
+            
+            if (!prompt) {
+                el.details.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-magic"></i>
+                        <h4>Welcome to PromptLabs</h4>
+                        <p>Select a prompt from the sidebar to start composing.</p>
+                    </div>`;
+                return;
+            }
+
+            const templates = [...(prompt.templates || [])].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+            
+            el.details.innerHTML = `
+                <div class="prompt-header">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="tag" style="border-color: var(--accent-color); color: var(--accent-color);"><i class="bi bi-diagram-3 me-1"></i>${escapeHtml(prompt.category)}</span>
+                        <span class="tag"><i class="bi bi-cpu me-1"></i>${escapeHtml(prompt.model || "Universal")}</span>
+                        ${(prompt.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
+                    </div>
+                    <h1 class="h3 fw-bold mb-2 text-white">${escapeHtml(prompt.display_name || prompt.name)}</h1>
+                    <p class="text-muted fs-6 mb-3">${escapeHtml(prompt.description || "")}</p>
+                    ${prompt.steps ? `<div class="p-3 rounded-3" style="background: var(--bg-surface); border: 1px solid var(--border-color); font-size: 0.9rem;"><i class="bi bi-info-circle me-2 text-primary"></i>${escapeHtml(prompt.steps)}</div>` : ""}
                 </div>
-              </div>
-            </div>
-          </div>
-          <div id="templatesRoot" class="vstack gap-3"></div>
-        `;
+                <div id="templatesRoot" class="d-flex flex-column gap-4"></div>
+            `;
 
-        const root = document.getElementById("templatesRoot");
+            const root = document.getElementById("templatesRoot");
 
-        templates.forEach((tpl, i) => {
-          const card = document.createElement("section");
-          card.className = "surface-2 p-3";
-          card.innerHTML = `
-            <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
-              <div>
-                <h2 class="h6 mb-1"><i class="bi bi-braces-asterisk me-1" style="color:var(--accent);"></i>#${escapeHtml(String(tpl.sequence ?? i + 1))} ${escapeHtml(tpl.name || "template")}</h2>
-                <p class="small mb-0" style="color:var(--text-soft);">${escapeHtml(tpl.description || "")}</p>
-              </div>
-              <button class="btn btn-sm btn-copy-template" data-copy><i class="bi bi-clipboard me-1"></i>Copy</button>
-            </div>
+            templates.forEach((tpl, i) => {
+                const card = document.createElement("section");
+                card.className = "template-step";
+                card.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary" style="border-color: var(--border-color) !important;">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge" style="background: var(--accent-color);">Step ${escapeHtml(String(tpl.sequence ?? i + 1))}</span>
+                                <h2 class="h6 fw-bold mb-0 text-white">${escapeHtml(tpl.name || "Template")}</h2>
+                            </div>
+                            <p class="small text-muted mb-0 mt-1">${escapeHtml(tpl.description || "Fill out the variables to generate this section of the prompt.")}</p>
+                        </div>
+                        <button class="btn-action primary shadow-sm" data-copy>
+                            <i class="bi bi-clipboard"></i> <span class="d-none d-sm-inline">Copy Prompt</span>
+                        </button>
+                    </div>
 
-            <div class="row g-3">
-              <div class="col-12 col-xl-4">
-                <label class="form-label fw-semibold"><i class="bi bi-sliders2 me-1"></i>Variables</label>
-                <div data-vars class="vstack gap-2"></div>
-                <button class="btn btn-link btn-sm px-0 mt-2 text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#vars-${i}" aria-expanded="false" aria-controls="vars-${i}">
-                  <i class="bi bi-chevron-down me-1"></i>Resolved variable values
-                </button>
-                <div class="collapse" id="vars-${i}">
-                  <pre data-vars-json class="form-control mono" style="min-height: 90px;">{}</pre>
-                </div>
-              </div>
-              <div class="col-12 col-xl-8">
-                <label class="form-label fw-semibold"><i class="bi bi-pencil-square me-1"></i>Editable output prompt</label>
-                <textarea data-output class="form-control mono output-textarea"></textarea>
-                <div class="d-flex justify-content-between mt-2">
-                  <button data-regenerate class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-arrow-repeat me-1"></i>Regenerate</button>
-                  <span data-feedback class="small text-success"></span>
-                </div>
-              </div>
-            </div>
-          `;
-          root.appendChild(card);
-          buildTemplateController(card, tpl);
-        });
-      }
+                    <div class="row g-4">
+                        <div class="col-12 col-xl-5">
+                            <h6 class="form-label mb-3"><i class="bi bi-sliders2 me-2"></i>Variables Map</h6>
+                            <div data-vars class="d-flex flex-column gap-3"></div>
+                            
+                            <div class="mt-4 pt-3 border-top border-secondary" style="border-color: var(--border-color) !important;">
+                                <button class="btn btn-link text-decoration-none text-muted p-0 small" type="button" data-bs-toggle="collapse" data-bs-target="#vars-${i}">
+                                    <i class="bi bi-code-square me-1"></i> View JSON Context
+                                </button>
+                                <div class="collapse mt-2" id="vars-${i}">
+                                    <pre data-vars-json class="mono p-3 rounded" style="background: #111113; border: 1px solid var(--border-highlight); font-size: 0.75rem; color: #a1a1aa;"></pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-xl-7">
+                            <h6 class="form-label mb-3"><i class="bi bi-terminal me-2"></i>Generated Output</h6>
+                            <textarea data-output class="mono output-box shadow-inner"></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <button data-regenerate class="btn-action">
+                                    <i class="bi bi-arrow-repeat"></i> Regenerate
+                                </button>
+                                <span data-feedback class="small fw-medium text-success"></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                root.appendChild(card);
+                buildTemplateController(card, tpl);
+            });
+        }
 
-      function buildTemplateController(card, template) {
-        const varsRoot = card.querySelector("[data-vars]");
-        const varsJson = card.querySelector("[data-vars-json]");
-        const output = card.querySelector("[data-output]");
-        const regenerateBtn = card.querySelector("[data-regenerate]");
-        const copyBtn = card.querySelector("[data-copy]");
-        const feedback = card.querySelector("[data-feedback]");
+        function buildTemplateController(card, template) {
+            const varsRoot = card.querySelector("[data-vars]");
+            const varsJson = card.querySelector("[data-vars-json]");
+            const output = card.querySelector("[data-output]");
+            const regenerateBtn = card.querySelector("[data-regenerate]");
+            const copyBtn = card.querySelector("[data-copy]");
+            const feedback = card.querySelector("[data-feedback]");
 
-        const defs = Array.isArray(template.variables) ? template.variables : [];
-        const values = {};
-        const base = String(template.template || "");
+            const defs = Array.isArray(template.variables) ? template.variables : [];
+            const values = {};
+            const base = String(template.template || "");
 
-        defs.forEach((v, idx) => {
-          const name = String(v.name || `var_${idx + 1}`);
-          values[name] = v.default ?? "";
+            if (defs.length === 0) {
+                varsRoot.innerHTML = '<div class="text-muted small py-2">No variables required for this step.</div>';
+            }
 
-          const box = document.createElement("div");
-          box.innerHTML = `
-            <label class="form-label small mb-1 d-flex justify-content-between">
-              <span>${escapeHtml(name)}</span>
-              ${v.required ? '<span class="text-warning">required</span>' : ""}
-            </label>
-            <input type="text" class="form-control form-control-sm" value="${escapeHtml(String(v.default ?? ""))}" placeholder="${escapeHtml(v.description || "Enter value")}" />
-          `;
+            defs.forEach((v, idx) => {
+                const name = String(v.name || `var_${idx + 1}`);
+                values[name] = v.default ?? "";
 
-          const input = box.querySelector("input");
-          input.addEventListener("input", () => {
-            values[name] = input.value;
+                const box = document.createElement("div");
+                box.innerHTML = `
+                    <label class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-medium" style="color: var(--text-main); font-family: 'Fira Code', monospace;">$${escapeHtml(name)}</span>
+                        ${v.required ? '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size: 0.6rem;">Required</span>' : ""}
+                    </label>
+                    <input type="text" class="custom-input" value="${escapeHtml(String(v.default ?? ""))}" placeholder="${escapeHtml(v.description || "Enter value...")}" />
+                    ${v.description ? `<div class="small text-muted mt-1" style="font-size: 0.75rem;">${escapeHtml(v.description)}</div>` : ''}
+                `;
+
+                const input = box.querySelector("input");
+                input.addEventListener("input", () => {
+                    values[name] = input.value;
+                    regenerate();
+                });
+                varsRoot.appendChild(box);
+            });
+
+            function resolve() {
+                let out = base;
+                Object.entries(values).forEach(([key, value]) => {
+                    // Replace exact string matches of $variable_name
+                    const safe = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    out = out.replace(new RegExp(`\\$${safe}\\b`, "g"), String(value ?? ""));
+                });
+                return out;
+            }
+
+            function regenerate() {
+                output.value = resolve();
+                varsJson.textContent = JSON.stringify(values, null, 2);
+                feedback.textContent = "";
+            }
+
+            regenerateBtn.addEventListener("click", regenerate);
+
+            copyBtn.addEventListener("click", () => {
+                const text = output.value;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("Prompt copied to clipboard!");
+                }).catch(err => {
+                    console.error("Failed to copy", err);
+                    // Fallback for older browsers
+                    output.select();
+                    document.execCommand('copy');
+                    showToast("Prompt copied to clipboard!");
+                });
+            });
+
+            // Initial generation
             regenerate();
-          });
-          varsRoot.appendChild(box);
-        });
-
-        function resolve() {
-          let out = base;
-          Object.entries(values).forEach(([key, value]) => {
-            const safe = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            out = out.replace(new RegExp(`\\$${safe}\\b`, "g"), String(value ?? ""));
-          });
-          return out;
         }
 
-        function regenerate() {
-          output.value = resolve();
-          varsJson.textContent = JSON.stringify(values, null, 2);
-        }
-
-        regenerateBtn.addEventListener("click", regenerate);
-        copyBtn.addEventListener("click", async () => {
-          const ok = await copyText(output.value);
-          feedback.textContent = ok ? "Copied." : "Copy failed.";
-        });
-
-        regenerate();
-      }
-
-      async function copyText(text) {
-        try {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } catch {
-          return false;
-        }
-      }
-
-      function showReady(source) {
-        // Hide loader/status once prompts are ready.
-        el.status.className = "d-none";
-        el.status.innerHTML = "";
-      }
-
-      function showError(message) {
-        el.status.className = "alert alert-danger d-flex align-items-center gap-2 mb-3";
-        el.status.innerHTML = `<i class="bi bi-bug"></i><span>${escapeHtml(message)}</span>`;
-      }
-
-      function escapeHtml(value) {
-        return String(value)
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
-      }
-    })();
-  </script>
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"
-  ></script>
+        // Boot
+        init();
+    </script>
 </body>
 </html>
