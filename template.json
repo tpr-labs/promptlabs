@@ -77,6 +77,23 @@
             ]
         }
       ]
+    },
+    {"name":  "Image To Sketch Prompt",
+     "display_name": "Image To Sketch Prompt",
+     "category": "image_to_sketch",
+     "tags": ["image to sketch", "line drawing", "outline", "contour", "image"],
+     "model": "gemini",
+     "description": "To convert a given image into a simple line drawing or sketch that captures the essential contours and features of the original image.",
+     "steps": "Use the `image_to_sketch_template` template to analyze the input image and generate a clean, minimalist line drawing that emphasizes the key shapes and outlines while removing color and shading details.",
+     "templates": [
+        {
+            "sequence": 1,
+            "name": "image_to_sketch_template",
+            "description": "to convert an image into a line drawing or sketch",
+            "template": "Create a photo-style line drawing ink sketch of the faces identical to the uploaded reference image - keep every facial feature, proportion, and expression exactly the same. Use blue and white ink tones with intricate, fine line detailing, drawn on a notebook-page style background. Show a right hand holding a pen and an eraser near the sketch, as if the artist is still working.",
+            "variables": []
+        }
+      ]
     }
   ]
 }
