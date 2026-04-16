@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro QR Generator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- QRious Library for QR Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+    <!-- Tailwind Configuration for Custom Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        primaryHover: '#4338ca',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for neatness */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #4f46e5;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        /* Checkered background for QR preview to show transparency/colors accurately */
+        .checkered-bg {
+            background-color: #f0f0f0;
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
+                              linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Navbar -->
+    <nav class="glass-panel sticky top-0 z-50 shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-primary">
+                <i class="ph ph-qr-code text-3xl"></i>
+                <span class="text-xl font-bold tracking-tight text-slate-900">ProQR</span>
+            </div>
+            <div class="text-sm text-slate-500 font-medium">
+                Live Rendering Generator
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: Input Forms -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    
+                    <!-- Tabs -->
+                    <div class="flex overflow-x-auto border-b border-slate-200 hide-scrollbar" id="tabs-container">
+                        <!-- Rendered dynamically -->
+                    </div>
+
+                    <!-- Dynamic Form Area -->
+                    <div class="p-6">
+                        <form id="dynamic-form" class="space-y-4" onsubmit="event.preventDefault();">
+                            <!-- Fields rendered dynamically -->
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Customization Panel -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="ph ph-palette"></i> Design & Customization
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Foreground Color</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="color-fg" value="#000000" class="h-10 w-10 rounded border-0 cursor-pointer p-0 bg-transparent">
+                                <input type="text" id="color-fg-text" value="#000000" class="flex-1 rounded-lg border-slate-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none uppercase font-mono">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Background Color</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="color-bg" value="#ffffff" class="h-10 w-10 rounded border-0 cursor-pointer p-0 bg-transparent">
+                                <input type="text" id="color-bg-text" value="#ffffff" class="flex-1 rounded-lg border-slate-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none uppercase font-mono">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Error Correction</label>
+                            <select id="error-correction" class="w-full rounded-lg border-slate-300 border px-3 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white">
+                                <option value="L">Low (7%)</option>
+                                <option value="M">Medium (15%)</option>
+                                <option value="Q">Quartile (25%)</option>
+                                <option value="H" selected>High (30%)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Resolution (px)</label>
+                            <input type="number" id="qr-size" value="512" min="128" max="2048" step="128" class="w-full rounded-lg border-slate-300 border px-3 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                            <p class="text-xs text-slate-500 mt-1">Export quality size.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Preview & Actions -->
+            <div class="lg:col-span-5">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-24">
+                    <h2 class="text-lg font-semibold text-slate-800 mb-4 text-center">Live Preview</h2>
+                    
+                    <!-- QR Preview Box -->
+                    <div class="aspect-square w-full max-w-[320px] mx-auto checkered-bg rounded-xl overflow-hidden border border-slate-200 flex items-center justify-center p-4 transition-transform duration-300 hover:scale-[1.02]">
+                        <canvas id="qr-canvas" class="w-full h-full object-contain rounded drop-shadow-md"></canvas>
+                        
+                        <!-- Empty State Placeholder -->
+                        <div id="qr-empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-slate-50/90 backdrop-blur-sm z-10 p-6 text-center">
+                            <i class="ph ph-qr-code text-5xl mb-2 opacity-50"></i>
+                            <p class="text-sm font-medium">Enter data to generate your QR Code</p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-8 space-y-3">
+                        <button onclick="downloadQR()" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primaryHover text-white py-3 px-4 rounded-xl font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <i class="ph ph-download-simple text-lg"></i> Download PNG
+                        </button>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="shareLink()" class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 py-3 px-4 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200">
+                                <i class="ph ph-share-network text-lg"></i> Share Link
+                            </button>
+                            <button onclick="copyQRImage()" class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 py-3 px-4 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200">
+                                <i class="ph ph-copy text-lg"></i> Copy Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Decoded Value Preview -->
+                    <div class="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Raw Content</p>
+                        <p id="raw-content-preview" class="text-sm text-slate-800 break-all font-mono line-clamp-3">...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+        <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3">
+            <i id="toast-icon" class="ph ph-check-circle text-emerald-400 text-xl"></i>
+            <span id="toast-message" class="font-medium text-sm">Copied to clipboard!</span>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- Configuration & Data Structures ---
+        const qrTypes = [
+            { id: 'url', icon: 'ph-link', label: 'URL' },
+            { id: 'text', icon: 'ph-text-t', label: 'Text' },
+            { id: 'wifi', icon: 'ph-wifi-high', label: 'Wi-Fi' },
+            { id: 'email', icon: 'ph-envelope', label: 'Email' },
+            { id: 'vcard', icon: 'ph-address-book', label: 'vCard' },
+            { id: 'location', icon: 'ph-map-pin', label: 'Location' }
+        ];
+
+        const formFields = {
+            url: [
+                { id: 'url_val', label: 'Website URL', type: 'url', placeholder: 'https://example.com', required: true }
+            ],
+            text: [
+                { id: 'text_val', label: 'Your Text', type: 'textarea', placeholder: 'Enter any text here...', rows: 4, required: true }
+            ],
+            wifi: [
+                { id: 'wifi_ssid', label: 'Network Name (SSID)', type: 'text', placeholder: 'My Home Network', required: true },
+                { id: 'wifi_pass', label: 'Password', type: 'text', placeholder: 'Network password' },
+                { id: 'wifi_enc', label: 'Encryption', type: 'select', options: [
+                    { value: 'WPA', label: 'WPA/WPA2/WPA3' },
+                    { value: 'WEP', label: 'WEP' },
+                    { value: 'nopass', label: 'None' }
+                ]}
+            ],
+            email: [
+                { id: 'email_to', label: 'Email To', type: 'email', placeholder: 'hello@example.com', required: true },
+                { id: 'email_sub', label: 'Subject', type: 'text', placeholder: 'Hello there' },
+                { id: 'email_body', label: 'Message', type: 'textarea', placeholder: 'Your message body...', rows: 3 }
+            ],
+            vcard: [
+                { id: 'vc_fname', label: 'First Name', type: 'text', placeholder: 'Jane', half: true, required: true },
+                { id: 'vc_lname', label: 'Last Name', type: 'text', placeholder: 'Doe', half: true },
+                { id: 'vc_phone', label: 'Phone Number', type: 'tel', placeholder: '+1 234 567 8900' },
+                { id: 'vc_email', label: 'Email', type: 'email', placeholder: 'jane.doe@example.com' },
+                { id: 'vc_org', label: 'Company/Organization', type: 'text', placeholder: 'Acme Corp' },
+                { id: 'vc_title', label: 'Job Title', type: 'text', placeholder: 'Software Engineer' },
+                { id: 'vc_url', label: 'Website', type: 'url', placeholder: 'https://janedoe.com' }
+            ],
+            location: [
+                { id: 'loc_lat', label: 'Latitude', type: 'number', placeholder: '37.7749', step: 'any', half: true, required: true },
+                { id: 'loc_lng', label: 'Longitude', type: 'number', placeholder: '-122.4194', step: 'any', half: true, required: true },
+                { id: 'loc_query', label: 'Use Google Maps Search Link instead of raw Coordinates', type: 'checkbox' }
+            ]
+        };
+
+        // --- State Management ---
+        let state = {
+            activeTab: 'url',
+            data: {},
+            config: {
+                fg: '#000000',
+                bg: '#ffffff',
+                level: 'H',
+                size: 512
+            }
+        };
+
+        let qr; // QRious instance
+
+        // --- Initialization ---
+        function init() {
+            // Initialize QRious
+            qr = new QRious({
+                element: document.getElementById('qr-canvas'),
+                size: state.config.size,
+                background: state.config.bg,
+                foreground: state.config.fg,
+                level: state.config.level,
+                value: 'https://example.com'
+            });
+
+            parseURLParams();
+            renderTabs();
+            renderForm();
+            setupColorPickers();
+            setupConfigListeners();
+            updateQR();
+        }
+
+        // --- UI Rendering ---
+        function renderTabs() {
+            const container = document.getElementById('tabs-container');
+            container.innerHTML = qrTypes.map(type => `
+                <button 
+                    onclick="switchTab('${type.id}')"
+                    class="flex items-center gap-2 px-5 py-4 text-sm font-medium transition-colors whitespace-nowrap focus:outline-none hover:text-primary
+                    ${state.activeTab === type.id ? 'tab-active' : 'text-slate-500 border-b-2 border-transparent'}"
+                >
+                    <i class="ph ${type.icon} text-lg"></i>
+                    ${type.label}
+                </button>
+            `).join('');
+        }
+
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            renderTabs();
+            renderForm();
+            updateQR();
+        }
+
+        function renderForm() {
+            const container = document.getElementById('dynamic-form');
+            const fields = formFields[state.activeTab];
+            let html = '<div class="grid grid-cols-2 gap-4">';
+
+            fields.forEach(field => {
+                const value = state.data[field.id] !== undefined ? state.data[field.id] : '';
+                const widthClass = field.half ? 'col-span-1' : 'col-span-2';
+                const requiredAsterisk = field.required ? '<span class="text-red-500">*</span>' : '';
+
+                if (field.type === 'textarea') {
+                    html += `
+                        <div class="${widthClass}">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">${field.label} ${requiredAsterisk}</label>
+                            <textarea id="${field.id}" rows="${field.rows || 3}" placeholder="${field.placeholder}" 
+                                class="w-full rounded-lg border-slate-300 border px-3 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow"
+                                oninput="handleInput('${field.id}', this.value)"
+                            >${escapeHTML(value)}</textarea>
+                        </div>
+                    `;
+                } else if (field.type === 'select') {
+                    html += `
+                        <div class="${widthClass}">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">${field.label}</label>
+                            <select id="${field.id}" 
+                                class="w-full rounded-lg border-slate-300 border px-3 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white transition-shadow"
+                                onchange="handleInput('${field.id}', this.value)"
+                            >
+                                ${field.options.map(opt => `<option value="${opt.value}" ${value === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                } else if (field.type === 'checkbox') {
+                    html += `
+                        <div class="${widthClass} flex items-center mt-2">
+                            <input type="checkbox" id="${field.id}" ${value === 'true' ? 'checked' : ''}
+                                class="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded cursor-pointer"
+                                onchange="handleInput('${field.id}', this.checked ? 'true' : 'false')"
+                            >
+                            <label for="${field.id}" class="ml-2 block text-sm text-slate-700 cursor-pointer">${field.label}</label>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="${widthClass}">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">${field.label} ${requiredAsterisk}</label>
+                            <input type="${field.type}" id="${field.id}" placeholder="${field.placeholder}" value="${escapeHTML(value)}" step="${field.step || ''}"
+                                class="w-full rounded-lg border-slate-300 border px-3 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow"
+                                oninput="handleInput('${field.id}', this.value)"
+                            >
+                        </div>
+                    `;
+                }
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // --- Logic & Data Handling ---
+        function handleInput(id, value) {
+            state.data[id] = value;
+            updateQR();
+        }
+
+        function buildQRString() {
+            const d = state.data;
+            let result = '';
+
+            switch(state.activeTab) {
+                case 'url':
+                    result = d.url_val || '';
+                    if (result && !/^https?:\/\//i.test(result)) {
+                        result = 'https://' + result;
+                    }
+                    break;
+                case 'text':
+                    result = d.text_val || '';
+                    break;
+                case 'wifi':
+                    if (!d.wifi_ssid) return '';
+                    const enc = d.wifi_enc || 'WPA';
+                    const pass = d.wifi_pass || '';
+                    const hidden = false; // Add hidden network toggle if needed
+                    result = `WIFI:T:${enc};S:${escapeQRChars(d.wifi_ssid)};P:${escapeQRChars(pass)};${hidden ? 'H:true;' : ''};`;
+                    break;
+                case 'email':
+                    if (!d.email_to) return '';
+                    result = `mailto:${d.email_to}`;
+                    const params = [];
+                    if (d.email_sub) params.push(`subject=${encodeURIComponent(d.email_sub)}`);
+                    if (d.email_body) params.push(`body=${encodeURIComponent(d.email_body)}`);
+                    if (params.length > 0) result += '?' + params.join('&');
+                    break;
+                case 'vcard':
+                    if (!d.vc_fname && !d.vc_lname) return '';
+                    result = [
+                        'BEGIN:VCARD',
+                        'VERSION:3.0',
+                        `N:${d.vc_lname || ''};${d.vc_fname || ''};;;`,
+                        `FN:${[d.vc_fname, d.vc_lname].filter(Boolean).join(' ')}`,
+                        d.vc_org ? `ORG:${d.vc_org}` : '',
+                        d.vc_title ? `TITLE:${d.vc_title}` : '',
+                        d.vc_phone ? `TEL:${d.vc_phone}` : '',
+                        d.vc_email ? `EMAIL:${d.vc_email}` : '',
+                        d.vc_url ? `URL:${d.vc_url}` : '',
+                        'END:VCARD'
+                    ].filter(Boolean).join('\n');
+                    break;
+                case 'location':
+                    if (!d.loc_lat || !d.loc_lng) return '';
+                    if (d.loc_query === 'true') {
+                        result = `https://maps.google.com/?q=${d.loc_lat},${d.loc_lng}`;
+                    } else {
+                        result = `geo:${d.loc_lat},${d.loc_lng}`;
+                    }
+                    break;
+            }
+            return result.trim();
+        }
+
+        function updateQR() {
+            const rawContent = buildQRString();
+            const emptyState = document.getElementById('qr-empty-state');
+            const rawPreview = document.getElementById('raw-content-preview');
+            
+            rawPreview.textContent = rawContent || '...';
+
+            if (!rawContent) {
+                emptyState.classList.remove('hidden');
+                // Create a faded out template QR
+                qr.set({ value: 'Empty State', foreground: '#e2e8f0', background: '#ffffff' });
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            try {
+                qr.set({
+                    value: rawContent,
+                    foreground: state.config.fg,
+                    background: state.config.bg,
+                    level: state.config.level,
+                    size: parseInt(state.config.size, 10) || 512
+                });
+            } catch (e) {
+                console.error("QR Generation Error:", e);
+                showToast("Error generating QR code. Data might be too large.", 'error');
+            }
+        }
+
+        // --- Customization Setup ---
+        function setupColorPickers() {
+            const syncColor = (pickerId, textId, configKey) => {
+                const picker = document.getElementById(pickerId);
+                const text = document.getElementById(textId);
+                
+                // When native color picker changes
+                picker.addEventListener('input', (e) => {
+                    const val = e.target.value.toUpperCase();
+                    text.value = val;
+                    state.config[configKey] = val;
+                    updateQR();
+                });
+                
+                // When text input changes
+                text.addEventListener('input', (e) => {
+                    let val = e.target.value;
+                    if (val.length === 7 && val.startsWith('#')) {
+                        picker.value = val;
+                        state.config[configKey] = val;
+                        updateQR();
+                    }
+                });
+
+                // Set initial values from URL if present
+                picker.value = state.config[configKey];
+                text.value = state.config[configKey].toUpperCase();
+            };
+
+            syncColor('color-fg', 'color-fg-text', 'fg');
+            syncColor('color-bg', 'color-bg-text', 'bg');
+        }
+
+        function setupConfigListeners() {
+            document.getElementById('error-correction').addEventListener('change', (e) => {
+                state.config.level = e.target.value;
+                updateQR();
+            });
+            document.getElementById('qr-size').addEventListener('change', (e) => {
+                state.config.size = e.target.value;
+                updateQR(); // Re-render with new size
+            });
+
+            // Init values
+            document.getElementById('error-correction').value = state.config.level;
+            document.getElementById('qr-size').value = state.config.size;
+        }
+
+        // --- URL Parameters (Sharing logic) ---
+        function parseURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('type') && qrTypes.some(t => t.id === params.get('type'))) {
+                state.activeTab = params.get('type');
+                
+                // Extract form fields
+                formFields[state.activeTab].forEach(field => {
+                    if (params.has(field.id)) {
+                        state.data[field.id] = params.get(field.id);
+                    }
+                });
+
+                // Extract config
+                if (params.has('fg')) state.config.fg = '#' + params.get('fg');
+                if (params.has('bg')) state.config.bg = '#' + params.get('bg');
+                if (params.has('lvl')) state.config.level = params.get('lvl');
+            }
+        }
+
+        function getShareableURL() {
+            const params = new URLSearchParams();
+            
+            // Only share if there is actual content
+            if (!buildQRString()) return window.location.origin + window.location.pathname;
+
+            params.set('type', state.activeTab);
+            
+            // Append data
+            formFields[state.activeTab].forEach(field => {
+                if (state.data[field.id]) {
+                    params.set(field.id, state.data[field.id]);
+                }
+            });
+
+            // Append config
+            if (state.config.fg !== '#000000') params.set('fg', state.config.fg.replace('#', ''));
+            if (state.config.bg !== '#ffffff') params.set('bg', state.config.bg.replace('#', ''));
+            if (state.config.level !== 'H') params.set('lvl', state.config.level);
+
+            return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+        }
+
+        function shareLink() {
+            const url = getShareableURL();
+            copyToClipboard(url, "Shareable link copied to clipboard!");
+        }
+
+        // --- Actions (Download & Copy) ---
+        function downloadQR() {
+            if (!buildQRString()) {
+                showToast("Please enter data to generate a QR code first.", 'error');
+                return;
+            }
+            
+            const canvas = document.getElementById('qr-canvas');
+            const dataUrl = canvas.toDataURL("image/png");
+            
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `QR_${state.activeTab}_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast("QR Code downloaded!");
+        }
+
+        async function copyQRImage() {
+            if (!buildQRString()) {
+                showToast("Please enter data first.", 'error');
+                return;
+            }
+
+            const canvas = document.getElementById('qr-canvas');
+            try {
+                // Ensure browser supports ClipboardItem
+                if (window.ClipboardItem) {
+                    canvas.toBlob(async (blob) => {
+                        try {
+                            const item = new ClipboardItem({ 'image/png': blob });
+                            await navigator.clipboard.write([item]);
+                            showToast("Image copied to clipboard!");
+                        } catch (err) {
+                            console.error("Clipboard write failed:", err);
+                            showToast("Could not copy image. Try downloading instead.", 'error');
+                        }
+                    });
+                } else {
+                    showToast("Your browser doesn't support copying images directly.", 'error');
+                }
+            } catch (err) {
+                showToast("Error copying image.", 'error');
+            }
+        }
+
+        function copyToClipboard(text, successMsg) {
+            // Using standard clipboard API, fallback to execCommand for robust iframe support
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(successMsg);
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(text, successMsg);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text, successMsg);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text, successMsg) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMsg);
+            } catch (err) {
+                showToast("Failed to copy", 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // --- Utils ---
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        // Escaping special characters for WiFi standard
+        function escapeQRChars(str) {
+            if(!str) return '';
+            return str.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/:/g, '\\:');
+        }
+
+        let toastTimeout;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            const iconEl = document.getElementById('toast-icon');
+
+            msgEl.textContent = message;
+            
+            if (type === 'error') {
+                iconEl.className = "ph ph-x-circle text-red-400 text-xl";
+            } else {
+                iconEl.className = "ph ph-check-circle text-emerald-400 text-xl";
+            }
+
+            toast.classList.remove('opacity-0', 'translate-y-20');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-20');
+            }, 3000);
+        }
+
+        // Bootstrap
+        window.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
