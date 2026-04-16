@@ -48,6 +48,51 @@
       ]
     },
     {
+      "name": "web_article_handwritten_notes_prompt",
+      "display_name": "Web Article Handwritten Notes Prompt",
+      "category": "handwritten",
+      "tags": ["handwritten", "web article", "notes", "sketchnote", "visual summary"],
+      "model": "gemini",
+      "description": "To generate beautiful handwritten notes from a web article",
+      "steps": "First use the `web_article_notes_template_planner` template to extract and structure key ideas from the web article. Then use the `web_article_notes_template_image_generator` template to convert those points into visually appealing handwritten notes.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "web_article_notes_template_planner",
+          "description": "to extract and structure key ideas from a web article",
+          "template": "Read and summarize the web article at $article_url. Identify the core thesis, 5-8 key takeaways, notable examples/data points, and practical action items. Keep it concise, clear, and scannable for $audience.",
+          "variables": [
+            {
+              "name": "article_url",
+              "description": "The URL of the web article to analyze and summarize into structured notes.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "audience",
+              "description": "The intended audience for the handwritten notes, such as students, creators, marketers, developers, or founders.",
+              "default": "general learners",
+              "required": true
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "name": "web_article_notes_template_image_generator",
+          "description": "to convert web article notes into visually appealing handwritten notes",
+          "template": "Create a hand-drawn sketchnote visual summary from these structured web article notes. Use a clean white paper background (no lines), black ink for headings/body text, and accent highlights in teal, orange, and muted red. Put the article title in a central boxed heading. Organize points into clusters with simple icons, arrows, mini charts, and callouts for examples. Keep all text legible, all-caps handwritten style, with balanced spacing and clear hierarchy. Output in $resolution.",
+          "variables": [
+            {
+              "name": "resolution",
+              "description": "Desired output resolution or aspect ratio for the handwritten notes image.",
+              "default": "16:9",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "object_technical_description_prompt",
       "display_name": "Object Technical Description Prompt",
       "category": "technical_description",
