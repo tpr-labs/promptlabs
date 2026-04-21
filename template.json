@@ -311,6 +311,273 @@
           ]
         }
       ]
+    },
+    {
+      "name": "cinematic_storyboard_generator_prompt",
+      "display_name": "Cinematic Storyboard Generator Prompt",
+      "category": "image_generation",
+      "tags": ["storyboard", "cinematic", "shot list", "film", "visual storytelling"],
+      "model": "gemini",
+      "description": "To transform a script or idea into a cinematic storyboard with scene-by-scene visual direction.",
+      "steps": "First use the `cinematic_storyboard_planner_template` to break the script into scenes and shots. Then use the `cinematic_storyboard_image_template` to generate high-impact storyboard frames.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "cinematic_storyboard_planner_template",
+          "description": "to create a detailed shot list and visual direction",
+          "template": "Convert this script/idea into a production-ready storyboard plan: $script. Style: $style. Output: scene breakdown, emotional tone per scene, camera angle suggestions, lens style, lighting mood, transitions, and key props. Keep it suitable for a $duration-second video.",
+          "variables": [
+            {
+              "name": "script",
+              "description": "Raw script, concept, or narration text to storyboard.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "style",
+              "description": "Visual tone such as noir, cyberpunk, documentary, anime cinematic, or premium ad-film.",
+              "default": "cinematic realism",
+              "required": true
+            },
+            {
+              "name": "duration",
+              "description": "Target duration in seconds for the video.",
+              "default": "30",
+              "required": true
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "name": "cinematic_storyboard_image_template",
+          "description": "to generate storyboard frames with unified cinematic look",
+          "template": "Generate storyboard frames from this shot plan: $shot_plan. Use cinematic composition, dramatic lighting, clear subject focus, and frame labels (Scene/Shot). Keep consistent characters, wardrobe, and environment continuity. Add handwritten director notes margin style. Output in $resolution.",
+          "variables": [
+            {
+              "name": "shot_plan",
+              "description": "Structured shot list from planner template.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "resolution",
+              "description": "Image output size or ratio for storyboard sheets.",
+              "default": "16:9",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "brand_campaign_visual_suite_prompt",
+      "display_name": "Brand Campaign Visual Suite Prompt",
+      "category": "marketing",
+      "tags": ["brand", "campaign", "ads", "social media", "visual identity"],
+      "model": "gemini",
+      "description": "To create a complete AI-powered visual campaign concept with assets for multiple social platforms.",
+      "steps": "Use the `brand_campaign_strategy_template` to define campaign concept and messaging, then use `brand_campaign_image_generator_template` to generate platform-ready image prompts.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "brand_campaign_strategy_template",
+          "description": "to generate campaign concept, hooks, and creative directions",
+          "template": "Design a high-conversion brand campaign for $brand targeting $audience. Goal: $goal. Provide: core campaign theme, 3 creative hooks, message pyramid, visual style guide (colors, mood, composition), CTA angles, and platform adaptations for Instagram, LinkedIn, and YouTube thumbnails.",
+          "variables": [
+            {
+              "name": "brand",
+              "description": "Brand or product name.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "audience",
+              "description": "Primary target audience segment.",
+              "default": "young professionals",
+              "required": true
+            },
+            {
+              "name": "goal",
+              "description": "Main campaign objective such as leads, signups, awareness, or launch buzz.",
+              "default": "product awareness",
+              "required": true
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "name": "brand_campaign_image_generator_template",
+          "description": "to generate image prompts for multi-platform campaign creatives",
+          "template": "Create 6 distinct image-generation prompts from this campaign strategy: $campaign_strategy. Include 2 for Instagram posts, 2 for Stories/Reels cover, 1 LinkedIn creative, and 1 YouTube thumbnail. Ensure consistent brand mood, visual language, typography guidance, and attention-grabbing composition. Output ratio set: $ratios.",
+          "variables": [
+            {
+              "name": "campaign_strategy",
+              "description": "Structured campaign strategy output from sequence 1.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "ratios",
+              "description": "Aspect ratio mapping for platforms.",
+              "default": "1:1, 9:16, 16:9",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "product_photoshoot_director_prompt",
+      "display_name": "Product Photoshoot Director Prompt",
+      "category": "image_generation",
+      "tags": ["product", "photoshoot", "lighting", "ecommerce", "ad creative"],
+      "model": "gemini",
+      "description": "To generate premium product photoshoot concepts and prompts with studio-grade art direction.",
+      "steps": "Use the `product_photoshoot_planner_template` to define angles, props, and lighting setups, then use `product_photoshoot_render_template` to produce final generation prompts.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "product_photoshoot_planner_template",
+          "description": "to build creative direction for product photography",
+          "template": "Act as a creative director. Build a photoshoot concept for $product for $use_case. Provide 8 shot concepts including hero shot, macro detail, lifestyle scene, packaging shot, and comparison shot. Include camera angle, lens suggestion, lighting setup, background styling, and prop list.",
+          "variables": [
+            {
+              "name": "product",
+              "description": "Product name and brief description.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "use_case",
+              "description": "Where these visuals will be used, e.g., ecommerce PDP, Amazon listing, social ads.",
+              "default": "ecommerce product page",
+              "required": true
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "name": "product_photoshoot_render_template",
+          "description": "to convert photoshoot direction into high-detail image prompts",
+          "template": "Generate ultra-detailed image prompts from this photoshoot plan: $shoot_plan. Enforce realistic material textures, accurate reflections, soft shadows, commercial-grade color grading, and uncluttered luxury composition. Provide prompt variants for white background, dark moody, and lifestyle setups. Output: $resolution.",
+          "variables": [
+            {
+              "name": "shoot_plan",
+              "description": "Photoshoot concepts and setup generated from sequence 1.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "resolution",
+              "description": "Desired final output resolution/aspect ratio.",
+              "default": "4:5",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "character_consistency_prompt",
+      "display_name": "AI Character Consistency Prompt",
+      "category": "image_generation",
+      "tags": ["character", "consistency", "avatar", "multi-scene", "design"],
+      "model": "gemini",
+      "description": "To create a reusable character bible and generate consistent visuals of the same character across scenes.",
+      "steps": "Use the `character_bible_template` to define immutable character traits, then use `character_scene_generator_template` to generate consistent scene prompts.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "character_bible_template",
+          "description": "to define locked character attributes for consistency",
+          "template": "Create a strict character bible for $character_name. Include immutable traits: age range, facial structure, skin tone, hair style, eye shape/color, body type, outfit palette, signature accessories, personality cues, and do-not-change rules. Also include style references for $art_style.",
+          "variables": [
+            {
+              "name": "character_name",
+              "description": "Name or identifier for the character.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "art_style",
+              "description": "Preferred visual style, e.g., stylized 3D, anime, semi-realistic, comic-book.",
+              "default": "semi-realistic cinematic",
+              "required": true
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "name": "character_scene_generator_template",
+          "description": "to generate scene prompts while preserving character identity",
+          "template": "Using this character bible: $character_bible, generate 10 scene prompts where the same character appears in different environments and emotions. Keep all immutable traits locked. Vary poses, camera framing, and lighting while preserving identity consistency. Output in $resolution.",
+          "variables": [
+            {
+              "name": "character_bible",
+              "description": "Structured character specification from sequence 1.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "resolution",
+              "description": "Output resolution/aspect ratio target.",
+              "default": "3:4",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "data_to_infographic_prompt",
+      "display_name": "Data to Infographic Prompt",
+      "category": "visual_communication",
+      "tags": ["data", "infographic", "charts", "insights", "presentation"],
+      "model": "gemini",
+      "description": "To convert raw data or findings into compelling infographic concepts and visual generation instructions.",
+      "steps": "Use `data_story_planner_template` to extract insights and narrative, then use `data_infographic_image_template` to generate infographic visuals.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "data_story_planner_template",
+          "description": "to build narrative and chart mapping from data",
+          "template": "Analyze this dataset/findings: $data_input. Audience: $audience. Create a visual narrative with: headline insight, supporting stats, chart recommendations (bar/line/pie/map), key comparisons, anomalies, and actionable takeaways. Keep it presentation-ready.",
+          "variables": [
+            {
+              "name": "data_input",
+              "description": "Raw numbers, summary tables, report excerpts, or metric list.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "audience",
+              "description": "Target audience for infographic consumption.",
+              "default": "business stakeholders",
+              "required": true
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "name": "data_infographic_image_template",
+          "description": "to generate polished infographic prompts from data story",
+          "template": "Generate a modern infographic design prompt from this data story: $data_story. Use clear hierarchy, clean typography, bold section dividers, icon-supported insights, and color-coded charts. Keep text minimal and legible. Prefer a premium editorial style suitable for social and slide decks. Output in $resolution.",
+          "variables": [
+            {
+              "name": "data_story",
+              "description": "Narrative and chart plan from sequence 1.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "resolution",
+              "description": "Final infographic output ratio/resolution.",
+              "default": "1080x1920",
+              "required": true
+            }
+          ]
+        }
+      ]
     }
   ]
 }
