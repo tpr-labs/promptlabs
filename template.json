@@ -163,6 +163,154 @@
           "variables": []
         }
       ]
+    },
+    {
+      "name": "meeting_minutes_action_items_prompt",
+      "display_name": "Meeting Minutes & Action Items Prompt",
+      "category": "productivity",
+      "tags": ["meeting", "minutes", "action items", "follow-up", "summary"],
+      "model": "gemini",
+      "description": "To convert raw meeting notes or transcript into clear minutes, decisions, risks, and owner-based action items.",
+      "steps": "Use the `meeting_minutes_action_items_template` template to transform unstructured meeting content into an executive summary and a practical action tracker.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "meeting_minutes_action_items_template",
+          "description": "to generate structured meeting minutes and action plan",
+          "template": "You are an operations assistant. Convert the following meeting content into structured minutes for $audience. Include: 1) Meeting purpose, 2) Key discussion points, 3) Decisions made, 4) Open questions, 5) Risks/blockers, and 6) Action items table with columns: Task, Owner, Due Date, Priority, Dependencies. Keep tone concise and professional. Meeting content: $meeting_content",
+          "variables": [
+            {
+              "name": "meeting_content",
+              "description": "Raw meeting transcript, rough notes, or bullet points to be converted into structured minutes.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "audience",
+              "description": "Who will consume the minutes, e.g., leadership team, engineering team, client stakeholders.",
+              "default": "cross-functional team",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "roadmap_from_idea_prompt",
+      "display_name": "Roadmap From Idea Prompt",
+      "category": "strategy",
+      "tags": ["roadmap", "product", "planning", "milestones", "execution"],
+      "model": "gemini",
+      "description": "To convert a raw product or business idea into a practical, phased roadmap with milestones and measurable outcomes.",
+      "steps": "Use the `roadmap_from_idea_template` template to define goals, assumptions, dependencies, timeline phases, and success metrics.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "roadmap_from_idea_template",
+          "description": "to create a phased execution roadmap from an initial idea",
+          "template": "Create a realistic execution roadmap for this idea: $idea. Context: $context. Constraints: $constraints. Provide output in sections: Vision, Target Users, Key Problems, Proposed Solution, Assumptions to Validate, 90-day roadmap (Now/Next/Later), Milestones by month, Risks + mitigations, and KPIs to track. Keep recommendations practical for a $team_size-person team.",
+          "variables": [
+            {
+              "name": "idea",
+              "description": "The core idea to be turned into a roadmap.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "context",
+              "description": "Business/domain context such as target market, existing product, or current stage.",
+              "default": "early-stage startup",
+              "required": true
+            },
+            {
+              "name": "constraints",
+              "description": "Known constraints such as budget, legal limits, staffing, or deadlines.",
+              "default": "limited budget and tight deadlines",
+              "required": true
+            },
+            {
+              "name": "team_size",
+              "description": "Approximate number of people who will execute the roadmap.",
+              "default": "5",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "code_review_assistant_prompt",
+      "display_name": "Code Review Assistant Prompt",
+      "category": "engineering",
+      "tags": ["code review", "quality", "security", "performance", "refactor"],
+      "model": "gemini",
+      "description": "To review code snippets or pull request diffs and provide prioritized, actionable feedback.",
+      "steps": "Use the `code_review_assistant_template` template to identify correctness issues, maintainability concerns, security risks, and improvement suggestions.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "code_review_assistant_template",
+          "description": "to produce a structured, severity-based code review",
+          "template": "Act as a senior reviewer. Review this code or diff:\n$code_input\n\nTech stack: $tech_stack. Focus on: correctness, readability, maintainability, performance, and security. Return: 1) Summary, 2) Critical issues, 3) Major issues, 4) Minor suggestions, 5) Refactoring opportunities, 6) Test cases to add. For each issue include why it matters and a concrete fix example.",
+          "variables": [
+            {
+              "name": "code_input",
+              "description": "Code snippet, file content, or diff to review.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "tech_stack",
+              "description": "Relevant language/framework context (e.g., Python + FastAPI, React + TypeScript).",
+              "default": "general",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "learning_path_prompt",
+      "display_name": "Personalized Learning Path Prompt",
+      "category": "education",
+      "tags": ["learning", "curriculum", "upskilling", "study plan", "projects"],
+      "model": "gemini",
+      "description": "To generate a personalized, time-bound learning plan with milestones, resources, and practice projects.",
+      "steps": "Use the `learning_path_template` template to create a tailored plan based on goals, current skill level, and available time.",
+      "templates": [
+        {
+          "sequence": 1,
+          "name": "learning_path_template",
+          "description": "to build a structured learning path for a target skill",
+          "template": "Design a personalized learning roadmap to master $skill in $duration. Learner profile: $current_level. Weekly time available: $hours_per_week hours. Produce: 1) Learning objectives, 2) Week-by-week curriculum, 3) Recommended resources (free + paid), 4) Hands-on exercises, 5) Portfolio projects, 6) Self-assessment checkpoints, 7) Common pitfalls and how to avoid them.",
+          "variables": [
+            {
+              "name": "skill",
+              "description": "The primary skill/topic to learn.",
+              "default": "",
+              "required": true
+            },
+            {
+              "name": "duration",
+              "description": "Target learning timeline (e.g., 8 weeks, 3 months).",
+              "default": "12 weeks",
+              "required": true
+            },
+            {
+              "name": "current_level",
+              "description": "Current proficiency level and relevant background.",
+              "default": "beginner",
+              "required": true
+            },
+            {
+              "name": "hours_per_week",
+              "description": "Study hours available per week.",
+              "default": "6",
+              "required": true
+            }
+          ]
+        }
+      ]
     }
   ]
 }
